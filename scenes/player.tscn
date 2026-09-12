@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/components/player_input.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/components/character_movement.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/components/directional_sprite.gd" id="4"]
+[ext_resource type="Texture2D" path="res://assets/characters/knight/idle_directions.png" id="5"]
+
+[sub_resource type="CapsuleShape3D" id="PlayerShape"]
+radius = 0.25
+height = 1.2
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1")
+floor_snap_length = 0.2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.6, 0)
+shape = SubResource("PlayerShape")
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="CharacterMovement" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="DirectionalSprite" type="Sprite3D" parent="."]
+texture = ExtResource("5")
+vframes = 8
+frame = 2
+pixel_size = 0.025
+offset = Vector2(0, 32)
+billboard = 1
+transparent = true
+shaded = false
+double_sided = true
+alpha_cut = 1
+texture_filter = 0
+script = ExtResource("4")
