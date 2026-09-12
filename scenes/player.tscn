@@ -19,12 +19,15 @@ position = Vector3(0, 0.6, 0)
 shape = SubResource("PlayerShape")
 
 [node name="PlayerInput" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("2")
 
 [node name="CharacterMovement" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("3")
 
 [node name="DirectionalSprite" type="Sprite3D" parent="."]
+unique_name_in_owner = true
 texture = ExtResource("5")
 vframes = 8
 frame = 2

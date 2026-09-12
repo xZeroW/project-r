@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/prototype_map.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/orbit_camera.gd" id="3"]
 
 [sub_resource type="Environment" id="Environment"]
 background_mode = 1
@@ -35,18 +36,20 @@ shadow_enabled = true
 position = Vector3(0, 0.05, 0)
 
 [node name="Camera3D" type="Camera3D" parent="."]
+process_physics_priority = -1
 position = Vector3(18, 18, 18)
 rotation_degrees = Vector3(-35.26439, 45, 0)
 projection = 1
 current = true
 size = 32.0
 far = 100.0
+script = ExtResource("3")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="Controls" type="Label" parent="HUD"]
 offset_left = 24.0
 offset_top = 20.0
-text = "MAP PROTOTYPE\nWASD — move · Combine keys for diagonals"
+text = "MAP PROTOTYPE\nWASD — move · Combine keys for diagonals\nQ / E — rotate camera"
 label_settings = SubResource("HelpStyle")
 mouse_filter = 2

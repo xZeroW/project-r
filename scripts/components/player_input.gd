@@ -1,3 +1,4 @@
+class_name PlayerInput
 extends Node
 ## Produces screen-relative movement intent without owning movement or visuals.
 
