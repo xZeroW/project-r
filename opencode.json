@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "skill": {
+      "*": "ask",
+      "pr-review": "allow",
+      "internal-*": "deny",
+      "experimental-*": "ask"
+    }
+  }
+}
