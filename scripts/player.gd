@@ -16,6 +16,11 @@ func _physics_process(delta: float) -> void:
 		direction = movement_component.get_world_direction(camera.global_basis, input_component.get_movement_intent())
 		if not direction.is_zero_approx():
 			_facing_direction = direction.normalized()
+	var previous_position := global_position
 	movement_component.move(self, direction, delta)
+	var displacement := global_position - previous_position
+	var is_moving := Vector2(displacement.x, displacement.z).length_squared() > 0.000001
 	if camera != null:
-		visual_component.update_facing(_facing_direction, camera.global_basis)
+		visual_component.update_facing(_facing_direction, camera.global_basis, is_moving)
+	else:
+		visual_component.idle()

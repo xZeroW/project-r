@@ -19,6 +19,8 @@ Build a map and player in Godot with WASD movement. Map textures are unnecessary
 
 **Source:** Project owner's map-and-player brief, recorded on 2026-09-12. The supplied source path and extracted asset details are recorded in the [asset notes](../../assets/characters/knight/README.md).
 
+**Updated character requirement:** The owner subsequently supplied `example.png` for idle and walking. The first five poses are idle directions south → southwest → west → northwest → north. The next five rows contain the matching walking loops. Missing eastern views are mirrored. This supersedes the original static-knight presentation; the earlier asset is retained.
+
 ## Current implementation — Scene and controls
 
 The following are implemented prototype choices, not approved long-term specifications:
@@ -41,30 +43,32 @@ The following are implemented prototype choices, not approved long-term specific
 | `scripts/player.gd` | Coordinates components during physics updates and owns the persistent world-facing direction. |
 | `scripts/components/player_input.gd` | Reads movement actions into a 2D intent vector. |
 | `scripts/components/character_movement.gd` | Converts intent into camera-relative ground movement and applies physics. |
-| `scripts/components/directional_sprite.gd` | Projects the world-facing direction onto camera ground-plane axes and selects the visible sprite frame. |
+| `scripts/components/directional_sprite.gd` | Projects world facing onto camera ground-plane axes, chooses the source clip/mirroring, and preserves walking phase when turning. |
 
 Components have named script types and are cached through scene-unique references. The movement component converts input and the camera basis into a world-space direction. The player uses that direction for both movement and facing, retaining the last nonzero facing while idle. Physics receives the world-space direction, and presentation receives the retained facing and camera basis. If no camera is active, directional input pauses and facing is retained, while gravity and collision handling continue. Movement resumes when a camera becomes active again.
 
-The visual component is a camera-facing `Sprite3D` with transparency, depth testing, and an offset positioning the sprite's feet near the physics body's ground contact. The supplied embedded shadows are retained. The first column is extracted into a local 128 × 1024 PNG, so the project does not depend on the original Downloads path at runtime.
+The visual component is a camera-facing `AnimatedSprite3D` with depth testing, alpha scissor, nearest filtering, and a foot-aligned offset. Its shared `example_frames.tres` references individually cropped regions of the unevenly packed 1200 × 1310 `example.png`. All 45 regions have a padded 96 × 128 canvas and a consistent foot baseline. No runtime image slicing or mirrored texture copies are needed.
 
 ## Current implementation — Direction mapping
 
-| Input | Screen-facing direction | Sprite row (zero-based) |
-| --- | --- | --- |
-| D | East | 0 |
-| S + D | Southeast | 1 |
-| S | South | 2 |
-| S + A | Southwest | 3 |
-| A | West | 4 |
-| W + A | Northwest | 5 |
-| W | North | 6 |
-| W + D | Northeast | 7 |
+| Input | Screen-facing direction | Source idle/walk direction | Mirrored |
+| --- | --- | --- | --- |
+| D | East | West | Yes |
+| S + D | Southeast | Southwest | Yes |
+| S | South | South | No |
+| S + A | Southwest | Southwest | No |
+| A | West | West | No |
+| W + A | Northwest | Northwest | No |
+| W | North | North | No |
+| W + D | Northeast | Northwest | Yes |
 
-Facing follows the intended world-space movement direction even when an obstacle blocks movement. Idle retains that direction relative to the map. The sprite frame is recalculated against the camera every physics tick, so a 180-degree orbit changes a front view into a back view without turning the character. Camera axes are flattened and normalized before selecting one of eight sectors, avoiding tilt-induced directional bias. Only one static frame per direction is used; animation is deferred.
+Facing follows the intended world-space movement direction even when an obstacle blocks movement. Idle retains that direction relative to the map. The visible direction and mirroring are recalculated against the camera every physics tick, so a 180-degree orbit changes a front view into a back view without turning the character. Camera axes are flattened and normalized before selecting one of eight sectors, avoiding tilt-induced directional bias.
+
+Actual horizontal displacement after `move_and_slide()` selects idle versus walking: a fully blocked character idles rather than walking in place, while sliding movement continues animating. Each walking clip loops through eight frames at 10 FPS; each idle clip holds its single pose. Direction changes during walking retain both the frame and fractional progress through `set_frame_and_progress()`. The same clip is not restarted each physics tick. `facing_index` represents the viewing sector independently of the animated sprite's temporal `frame`.
 
 ## Verification
 
-`tests/prototype_test.gd` checks scene startup, the extracted texture dimensions, physical WASD bindings, all eight movement/facing combinations, equal diagonal speed, retained idle facing, floor contact, obstacle collision, and boundary collision. It also verifies gravity and floor collision without an active camera, paused horizontal movement with retained facing, and recovery when the camera becomes active again.
+`tests/prototype_test.gd` checks scene startup, atlas dimensions/bounds and padding, physical WASD bindings, all eight movement/facing/mirroring combinations, equal diagonal speed, retained idle facing, floor contact, obstacle collision, and boundary collision. It also verifies gravity and floor collision without an active camera, paused horizontal movement with retained facing, and recovery when the camera becomes active again. Animation checks exercise all eight walking frames, looping, idle transitions, blocked movement, and frame/progress preservation when changing direction or camera-relative view.
 
 See the [project README](../../README.md) for run and test commands.
 

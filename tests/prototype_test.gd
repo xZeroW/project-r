@@ -2,6 +2,7 @@ extends SceneTree
 ## Integration checks against the actual playable scene and physics world.
 
 var failures: int = 0
+var walk_loops: int = 0
 
 class CameraFollowProbe:
 	extends Node
@@ -23,6 +24,60 @@ func _check(condition: bool, message: String) -> void:
 	if not condition:
 		failures += 1
 		push_error(message)
+
+func _has_facing(sprite: DirectionalSprite, direction: int) -> bool:
+	var source_directions: Array[String] = ["west", "southwest", "south", "southwest", "west", "northwest", "north", "northwest"]
+	return sprite.facing_index == direction and String(sprite.animation).get_slice("_", 1) == source_directions[direction] and sprite.flip_h == (direction in [0, 1, 7])
+
+func _check_animation_frames(sprite: DirectionalSprite) -> void:
+	var frames := sprite.sprite_frames
+	_check(frames.get_animation_names().size() == 10, "The sheet must provide five idle and five walking clips.")
+	for animation_name in frames.get_animation_names():
+		var expected_count := 8 if animation_name.begins_with("walk_") else 1
+		_check(frames.get_frame_count(animation_name) == expected_count, "Incorrect source frame count: " + animation_name)
+		for index in range(frames.get_frame_count(animation_name)):
+			var atlas := frames.get_frame_texture(animation_name, index) as AtlasTexture
+			_check(atlas != null, "Animation frames must reference atlas regions.")
+			if atlas == null:
+				continue
+			_check(atlas.atlas.get_size() == Vector2(1200, 1310), "Animation must use the new example.png sheet.")
+			_check(atlas.get_size() == Vector2(96, 128), "Every frame must have the same padded canvas.")
+			_check(Rect2(Vector2.ZERO, atlas.atlas.get_size()).encloses(atlas.region), "Atlas regions must stay inside the source image.")
+
+func _on_walk_looped() -> void:
+	walk_loops += 1
+
+func _check_animation_playback(player: CharacterBody3D, sprite: DirectionalSprite, camera: Camera3D) -> void:
+	_release_input()
+	_teleport_player(player, Vector3(0, 0.02, 5))
+	await _tick(5)
+	walk_loops = 0
+	sprite.animation_looped.connect(_on_walk_looped)
+	Input.action_press("move_right")
+	var seen_frames: Dictionary[int, bool] = {}
+	for tick in range(60):
+		await _tick()
+		seen_frames[sprite.frame] = true
+	sprite.animation_looped.disconnect(_on_walk_looped)
+	_check(sprite.animation == &"walk_west" and sprite.flip_h, "Moving east must play mirrored west walking frames.")
+	_check(seen_frames.size() == 8 and walk_loops > 0, "Walking must advance through all eight frames and loop without restarting each tick.")
+	# Exercise a clip change and a mirrored turn synchronously, mid-stride.
+	sprite.set_frame_and_progress(3, 0.45)
+	var south := camera.global_basis.z
+	south.y = 0.0
+	sprite.update_facing(south.normalized(), camera.global_basis, true)
+	_check(sprite.animation == &"walk_south" and not sprite.flip_h, "Turning south must select the unmirrored south clip.")
+	_check(sprite.frame == 3 and is_equal_approx(sprite.frame_progress, 0.45), "Turning must preserve the walking frame and fractional progress.")
+	var east := camera.global_basis.x
+	east.y = 0.0
+	sprite.update_facing(east.normalized(), Basis(Vector3.UP, PI) * camera.global_basis, true)
+	_check(sprite.animation == &"walk_west" and not sprite.flip_h, "A half-turn camera view must reveal the unmirrored opposite side mid-stride.")
+	_check(sprite.frame == 3 and is_equal_approx(sprite.frame_progress, 0.45), "Camera-driven direction changes must preserve the walking phase.")
+	_release_input()
+	await _tick(3)
+	_check(String(sprite.animation).begins_with("idle_") and sprite.frame == 0, "Stopping must return to the single-frame idle pose.")
+	await _tick(15)
+	_check(sprite.frame == 0, "Idle must hold its pose rather than cycling through directions.")
 
 func _tick(count: int = 1) -> void:
 	for index in range(count):
@@ -49,12 +104,12 @@ func _scroll_camera(button: MouseButton, notches: int = 1) -> void:
 			# Local viewport coordinates avoid headless window/stretch conversions.
 			root.push_input(event, true)
 
-func _check_camera_zoom(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
+func _check_camera_zoom(player: CharacterBody3D, sprite: DirectionalSprite, camera: Camera3D) -> void:
 	_release_input()
 	await _tick(90)
 	var initial_size := camera.size
 	var initial_transform := camera.transform
-	var initial_frame := sprite.frame
+	var initial_facing := sprite.facing_index
 	var initial_position := player.position
 	var minimum: float = camera.get(&"min_zoom_size")
 	var maximum: float = camera.get(&"max_zoom_size")
@@ -92,9 +147,9 @@ func _check_camera_zoom(player: CharacterBody3D, sprite: Sprite3D, camera: Camer
 	await _tick(30)
 	_check(is_equal_approx(camera.size, maximum), "An inactive camera must ignore wheel input.")
 	_check(camera.transform.is_equal_approx(initial_transform), "Zoom must preserve the camera's orbit position and tilt.")
-	_check(sprite.frame == initial_frame and player.position.distance_to(initial_position) < 0.01, "Zoom must not change character position or facing.")
+	_check(_has_facing(sprite, initial_facing) and player.position.distance_to(initial_position) < 0.01, "Zoom must not change character position or facing.")
 
-func _check_camera_rotation(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
+func _check_camera_rotation(player: CharacterBody3D, sprite: DirectionalSprite, camera: Camera3D) -> void:
 	_release_input()
 	await _tick(90)
 	var initial_transform := camera.transform
@@ -134,7 +189,7 @@ func _check_camera_rotation(player: CharacterBody3D, sprite: Sprite3D, camera: C
 		_check(absf(projected.x) < 0.1 if intent.x == 0 else projected.x * intent.x > 0.0, "Rotated-camera horizontal movement disagrees with input.")
 		_check(absf(projected.y) < 0.1 if intent.y == 0 else projected.y * intent.y > 0.0, "Rotated-camera vertical movement disagrees with input.")
 		_check(is_equal_approx(Vector2(player.velocity.x, player.velocity.z).length(), 4.0), "Rotated-camera movement must retain speed.")
-		_check(sprite.frame == row, "Rotated-camera facing must agree with input.")
+		_check(_has_facing(sprite, row), "Rotated-camera facing and mirroring must agree with input.")
 		_release_input()
 	Input.action_press("rotate_camera_right")
 	await _tick(60)
@@ -196,56 +251,56 @@ func _check_camera_follow(player: CharacterBody3D, camera: Camera3D) -> void:
 	await _tick(90)
 	_check((camera.global_position - player.global_position).distance_to(initial_offset) < 0.01, "Camera must resume following after its target is restored.")
 
-func _check_world_facing(player: CharacterBody3D, sprite: Sprite3D) -> void:
+func _check_world_facing(player: CharacterBody3D, sprite: DirectionalSprite) -> void:
 	_release_input()
 	_teleport_player(player, Vector3(0, 0.02, 0))
 	Input.action_press("move_down")
 	await _tick(8)
 	_release_input()
 	await _tick(2)
-	_check(sprite.frame == 2, "Moving down must establish a south-facing sprite.")
+	_check(_has_facing(sprite, 2), "Moving down must establish a south-facing sprite.")
 	var stopped := player.position
 	# At 90 degrees/second, each half-second orbit crosses one 45-degree sector.
 	var sector_ticks := roundi(Engine.physics_ticks_per_second * 0.5)
 	Input.action_press("rotate_camera_left")
 	for sector in range(1, 9):
 		await _tick(sector_ticks)
-		_check(sprite.frame == posmod(2 + sector, 8), "Idle world-facing sprite must advance one sector per 45-degree orbit (sector %d)." % sector)
+		_check(_has_facing(sprite, posmod(2 + sector, 8)), "Idle world-facing sprite must advance one sector per 45-degree orbit (sector %d)." % sector)
 		_check(player.position.distance_to(stopped) < 0.01, "Changing the visible side must not move the idle character.")
 	_release_input()
-	_check(sprite.frame == 2, "A full camera orbit must restore the original front view.")
+	_check(_has_facing(sprite, 2), "A full camera orbit must restore the original front view.")
 	Input.action_press("rotate_camera_right")
 	await _tick(sector_ticks * 4)
 	_release_input()
-	_check(sprite.frame == 6, "A reverse 180-degree orbit must show the idle character's back.")
+	_check(_has_facing(sprite, 6), "A reverse 180-degree orbit must show the idle character's back.")
 	await _tick(3)
-	_check(sprite.frame == 6, "The back view must remain after camera rotation stops.")
+	_check(_has_facing(sprite, 6), "The back view must remain after camera rotation stops.")
 	# New movement changes the map-facing direction, even after the camera turns.
 	Input.action_press("move_down")
 	await _tick(8)
 	_release_input()
-	_check(sprite.frame == 2, "New movement must face screen-down from the rotated view.")
+	_check(_has_facing(sprite, 2), "New movement must face screen-down from the rotated view.")
 	Input.action_press("rotate_camera_left")
 	await _tick(sector_ticks * 4)
 	_release_input()
-	_check(sprite.frame == 6, "Orbit must preserve the newly established world-facing direction.")
+	_check(_has_facing(sprite, 6), "Orbit must preserve the newly established world-facing direction.")
 
-func _check_camera_free_physics(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
+func _check_camera_free_physics(player: CharacterBody3D, sprite: DirectionalSprite, camera: Camera3D) -> void:
 	camera.clear_current(false)
 	_check(root.get_camera_3d() == null, "Regression check requires no active camera.")
 	_teleport_player(player, Vector3(0, 5, 0), Vector3(4, 0, 0))
-	var previous_frame := sprite.frame
+	var previous_facing := sprite.facing_index
 	Input.action_press("move_right")
 	await _tick(10)
 	_check(player.position.y < 5.0 and player.velocity.y < 0.0, "Gravity must continue without a camera.")
 	_check(Vector2(player.position.x, player.position.z).is_zero_approx(), "Without a camera, horizontal motion must stop despite held input.")
-	_check(sprite.frame == previous_frame, "Without a camera, the player must retain its facing.")
+	_check(_has_facing(sprite, previous_facing) and String(sprite.animation).begins_with("idle_"), "Without a camera, the player must idle and retain its facing.")
 	await _tick(90)
 	_check(player.is_on_floor(), "Without a camera, the player must still collide with the floor.")
 	camera.make_current()
 	var start := player.position
 	await _tick(8)
-	_check(player.position.distance_to(start) > 0.1 and sprite.frame == 0, "Movement and facing must resume when a camera becomes active.")
+	_check(player.position.distance_to(start) > 0.1 and _has_facing(sprite, 0), "Movement and facing must resume when a camera becomes active.")
 	_release_input()
 
 func _run() -> void:
@@ -255,10 +310,10 @@ func _run() -> void:
 	current_scene = world
 	await _tick(20)
 	var player := world.get_node("Player") as CharacterBody3D
-	var sprite := player.get_node("DirectionalSprite") as Sprite3D
+	var sprite := player.get_node("DirectionalSprite") as DirectionalSprite
 	var camera := world.get_node("Camera3D") as Camera3D
 	_check(player.is_on_floor(), "Player must settle on the floor.")
-	_check(sprite.texture.get_size() == Vector2(128, 1024), "Only the first sprite column should be imported.")
+	_check_animation_frames(sprite)
 	var bindings: Dictionary[String, Key] = {"move_left": KEY_A, "move_right": KEY_D, "move_up": KEY_W, "move_down": KEY_S, "rotate_camera_left": KEY_Q, "rotate_camera_right": KEY_E}
 	for action in bindings:
 		var events := InputMap.action_get_events(action)
@@ -275,7 +330,8 @@ func _run() -> void:
 			Input.action_press("move_down" if intent.y > 0 else "move_up")
 		var start := player.position
 		await _tick(8)
-		_check(sprite.frame == row, "Incorrect facing for direction %d." % row)
+		_check(_has_facing(sprite, row), "Incorrect facing or mirroring for direction %d." % row)
+		_check(String(sprite.animation).begins_with("walk_"), "Movement must play the walking animation.")
 		var horizontal := Vector2(player.velocity.x, player.velocity.z)
 		_check(is_equal_approx(horizontal.length(), 4.0), "Cardinal and diagonal speed must both be 4.")
 		var projected := camera.unproject_position(player.position) - camera.unproject_position(start)
@@ -284,7 +340,8 @@ func _run() -> void:
 		_release_input()
 		var stopped := player.position
 		await _tick(3)
-		_check(sprite.frame == row, "Idle must retain the last facing.")
+		_check(_has_facing(sprite, row), "Idle must retain the last facing.")
+		_check(String(sprite.animation).begins_with("idle_"), "Releasing movement must switch to idle.")
 		_check(player.position.distance_to(stopped) < 0.01, "Player must stop when input is released.")
 	# W + D moves along world -Z at this camera angle, into the tall block.
 	_teleport_player(player, Vector3(-4, 0.02, 0))
@@ -292,6 +349,7 @@ func _run() -> void:
 	Input.action_press("move_right")
 	await _tick(90)
 	_check(player.position.z > -1.8 and player.position.z < -1.6, "Tall block must stop the player at its near face.")
+	_check(String(sprite.animation).begins_with("idle_"), "A fully blocked character must not walk in place.")
 	_release_input()
 	# S + D moves along world +X toward the map boundary.
 	_teleport_player(player, Vector3(10, 0.02, 0))
@@ -306,6 +364,7 @@ func _run() -> void:
 	await _check_camera_rotation(player, sprite, camera)
 	await _check_world_facing(player, sprite)
 	await _check_camera_follow(player, camera)
+	await _check_animation_playback(player, sprite, camera)
 	if failures == 0:
-		print("PASS: bindings, eight directions, speed, idle, grounding, obstacles, boundaries, camera-free physics/recovery, mouse-wheel zoom, camera rotation/movement, persistent world facing, and player following.")
+		print("PASS: movement, collisions, camera controls/following, world facing, five-direction atlas, mirroring, idle/walk playback, and preserved animation phase.")
 	quit(0 if failures == 0 else 1)

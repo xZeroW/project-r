@@ -1,0 +1,416 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://cghilov4dlx27"]
+
+[ext_resource type="Texture2D" uid="uid://btcadm46j423w" path="res://assets/characters/knight/example.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="IdleN"]
+atlas = ExtResource("1")
+region = Rect2(284, 0, 54, 128)
+margin = Rect2(20, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="IdleNW"]
+atlas = ExtResource("1")
+region = Rect2(209, 0, 62, 128)
+margin = Rect2(16, 0, 34, 0)
+
+[sub_resource type="AtlasTexture" id="IdleS"]
+atlas = ExtResource("1")
+region = Rect2(17, 0, 59, 128)
+margin = Rect2(17, 0, 37, 0)
+
+[sub_resource type="AtlasTexture" id="IdleSW"]
+atlas = ExtResource("1")
+region = Rect2(87, 0, 47, 128)
+margin = Rect2(24, 0, 49, 0)
+
+[sub_resource type="AtlasTexture" id="IdleW"]
+atlas = ExtResource("1")
+region = Rect2(145, 0, 51, 128)
+margin = Rect2(17, 0, 45, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN0"]
+atlas = ExtResource("1")
+region = Rect2(14, 731, 54, 128)
+margin = Rect2(21, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN1"]
+atlas = ExtResource("1")
+region = Rect2(81, 731, 52, 128)
+margin = Rect2(23, 0, 44, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN2"]
+atlas = ExtResource("1")
+region = Rect2(144, 731, 50, 128)
+margin = Rect2(24, 0, 46, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN3"]
+atlas = ExtResource("1")
+region = Rect2(206, 731, 54, 128)
+margin = Rect2(22, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN4"]
+atlas = ExtResource("1")
+region = Rect2(271, 731, 54, 128)
+margin = Rect2(21, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN5"]
+atlas = ExtResource("1")
+region = Rect2(337, 731, 53, 128)
+margin = Rect2(21, 0, 43, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN6"]
+atlas = ExtResource("1")
+region = Rect2(401, 731, 51, 128)
+margin = Rect2(21, 0, 45, 0)
+
+[sub_resource type="AtlasTexture" id="WalkN7"]
+atlas = ExtResource("1")
+region = Rect2(463, 731, 53, 128)
+margin = Rect2(21, 0, 43, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW0"]
+atlas = ExtResource("1")
+region = Rect2(15, 584, 42, 128)
+margin = Rect2(27, 0, 54, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW1"]
+atlas = ExtResource("1")
+region = Rect2(68, 584, 46, 128)
+margin = Rect2(25, 0, 50, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW2"]
+atlas = ExtResource("1")
+region = Rect2(124, 584, 53, 128)
+margin = Rect2(22, 0, 43, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW3"]
+atlas = ExtResource("1")
+region = Rect2(186, 584, 49, 128)
+margin = Rect2(24, 0, 47, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW4"]
+atlas = ExtResource("1")
+region = Rect2(248, 584, 41, 128)
+margin = Rect2(28, 0, 55, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW5"]
+atlas = ExtResource("1")
+region = Rect2(301, 584, 62, 128)
+margin = Rect2(11, 0, 34, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW6"]
+atlas = ExtResource("1")
+region = Rect2(375, 584, 73, 128)
+margin = Rect2(6, 0, 23, 0)
+
+[sub_resource type="AtlasTexture" id="WalkNW7"]
+atlas = ExtResource("1")
+region = Rect2(461, 584, 63, 128)
+margin = Rect2(16, 0, 33, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS0"]
+atlas = ExtResource("1")
+region = Rect2(16, 146, 54, 128)
+margin = Rect2(21, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS1"]
+atlas = ExtResource("1")
+region = Rect2(82, 146, 54, 128)
+margin = Rect2(21, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS2"]
+atlas = ExtResource("1")
+region = Rect2(147, 146, 52, 128)
+margin = Rect2(22, 0, 44, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS3"]
+atlas = ExtResource("1")
+region = Rect2(210, 146, 54, 128)
+margin = Rect2(21, 0, 42, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS4"]
+atlas = ExtResource("1")
+region = Rect2(276, 146, 55, 128)
+margin = Rect2(20, 0, 41, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS5"]
+atlas = ExtResource("1")
+region = Rect2(343, 146, 55, 128)
+margin = Rect2(21, 0, 41, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS6"]
+atlas = ExtResource("1")
+region = Rect2(410, 146, 52, 128)
+margin = Rect2(22, 0, 44, 0)
+
+[sub_resource type="AtlasTexture" id="WalkS7"]
+atlas = ExtResource("1")
+region = Rect2(472, 146, 55, 128)
+margin = Rect2(20, 0, 41, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW0"]
+atlas = ExtResource("1")
+region = Rect2(15, 293, 45, 128)
+margin = Rect2(25, 0, 51, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW1"]
+atlas = ExtResource("1")
+region = Rect2(70, 293, 59, 128)
+margin = Rect2(20, 0, 37, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW2"]
+atlas = ExtResource("1")
+region = Rect2(140, 293, 68, 128)
+margin = Rect2(13, 0, 28, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW3"]
+atlas = ExtResource("1")
+region = Rect2(221, 293, 58, 128)
+margin = Rect2(19, 0, 38, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW4"]
+atlas = ExtResource("1")
+region = Rect2(291, 293, 48, 128)
+margin = Rect2(21, 0, 48, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW5"]
+atlas = ExtResource("1")
+region = Rect2(350, 293, 50, 128)
+margin = Rect2(23, 0, 46, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW6"]
+atlas = ExtResource("1")
+region = Rect2(409, 293, 62, 128)
+margin = Rect2(15, 0, 34, 0)
+
+[sub_resource type="AtlasTexture" id="WalkSW7"]
+atlas = ExtResource("1")
+region = Rect2(483, 293, 52, 128)
+margin = Rect2(22, 0, 44, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW0"]
+atlas = ExtResource("1")
+region = Rect2(15, 438, 40, 128)
+margin = Rect2(27, 0, 56, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW1"]
+atlas = ExtResource("1")
+region = Rect2(67, 438, 52, 128)
+margin = Rect2(17, 0, 44, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW2"]
+atlas = ExtResource("1")
+region = Rect2(130, 438, 72, 128)
+margin = Rect2(8, 0, 24, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW3"]
+atlas = ExtResource("1")
+region = Rect2(214, 438, 60, 128)
+margin = Rect2(17, 0, 36, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW4"]
+atlas = ExtResource("1")
+region = Rect2(287, 438, 43, 128)
+margin = Rect2(25, 0, 53, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW5"]
+atlas = ExtResource("1")
+region = Rect2(342, 438, 55, 128)
+margin = Rect2(16, 0, 41, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW6"]
+atlas = ExtResource("1")
+region = Rect2(407, 438, 72, 128)
+margin = Rect2(7, 0, 24, 0)
+
+[sub_resource type="AtlasTexture" id="WalkW7"]
+atlas = ExtResource("1")
+region = Rect2(492, 438, 60, 128)
+margin = Rect2(16, 0, 36, 0)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("IdleN")
+}],
+"loop": 1,
+"name": &"idle_north",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("IdleNW")
+}],
+"loop": 1,
+"name": &"idle_northwest",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("IdleS")
+}],
+"loop": 1,
+"name": &"idle_south",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("IdleSW")
+}],
+"loop": 1,
+"name": &"idle_southwest",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("IdleW")
+}],
+"loop": 1,
+"name": &"idle_west",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("WalkN0")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN1")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN2")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN3")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN4")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN5")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN6")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkN7")
+}],
+"loop": 1,
+"name": &"walk_north",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("WalkNW0")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW1")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW2")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW3")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW4")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW5")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW6")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkNW7")
+}],
+"loop": 1,
+"name": &"walk_northwest",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("WalkS0")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS1")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS2")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS3")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS4")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS5")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS6")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkS7")
+}],
+"loop": 1,
+"name": &"walk_south",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("WalkSW0")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW1")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW2")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW3")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW4")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW5")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW6")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkSW7")
+}],
+"loop": 1,
+"name": &"walk_southwest",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("WalkW0")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW1")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW2")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW3")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW4")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW5")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW6")
+}, {
+"duration": 1.0,
+"texture": SubResource("WalkW7")
+}],
+"loop": 1,
+"name": &"walk_west",
+"speed": 10.0
+}]

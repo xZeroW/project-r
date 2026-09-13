@@ -1,42 +1,39 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://c8lrimb27se4f"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/components/player_input.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/components/character_movement.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/components/directional_sprite.gd" id="4"]
-[ext_resource type="Texture2D" path="res://assets/characters/knight/idle_directions.png" id="5"]
+[ext_resource type="Script" uid="uid://bul5s1q5flevc" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" uid="uid://cjbeun4wjnh7j" path="res://scripts/components/player_input.gd" id="2"]
+[ext_resource type="Script" uid="uid://c3anopeq2qeyk" path="res://scripts/components/character_movement.gd" id="3"]
+[ext_resource type="Script" uid="uid://dmrdv8hxt6mc8" path="res://scripts/components/directional_sprite.gd" id="4"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/knight/example_frames.tres" id="5"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.25
 height = 1.2
 
-[node name="Player" type="CharacterBody3D"]
-script = ExtResource("1")
+[node name="Player" type="CharacterBody3D" unique_id=212500841]
 floor_snap_length = 0.2
+script = ExtResource("1")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-position = Vector3(0, 0.6, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=453536122]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 shape = SubResource("PlayerShape")
 
-[node name="PlayerInput" type="Node" parent="."]
+[node name="PlayerInput" type="Node" parent="." unique_id=373214183]
 unique_name_in_owner = true
 script = ExtResource("2")
 
-[node name="CharacterMovement" type="Node" parent="."]
+[node name="CharacterMovement" type="Node" parent="." unique_id=897067084]
 unique_name_in_owner = true
 script = ExtResource("3")
 
-[node name="DirectionalSprite" type="Sprite3D" parent="."]
+[node name="DirectionalSprite" type="AnimatedSprite3D" parent="." unique_id=1859005186]
 unique_name_in_owner = true
-texture = ExtResource("5")
-vframes = 8
-frame = 2
-pixel_size = 0.025
-offset = Vector2(0, 32)
+offset = Vector2(0, 56)
+pixel_size = 0.015
 billboard = 1
-transparent = true
-shaded = false
-double_sided = true
 alpha_cut = 1
 texture_filter = 0
+sprite_frames = ExtResource("5")
+animation = &"idle_south"
+autoplay = "idle_south"
 script = ExtResource("4")
