@@ -3,6 +3,19 @@ extends SceneTree
 
 var failures: int = 0
 
+class CameraFollowProbe:
+	extends Node
+	var player: Node3D
+	var camera: Camera3D
+	var samples: int = 0
+	var max_center_error: float = 0.0
+
+	func _process(_delta: float) -> void:
+		var rendered_position := player.get_global_transform_interpolated().origin
+		var center := get_viewport().get_visible_rect().get_center()
+		max_center_error = maxf(max_center_error, camera.unproject_position(rendered_position).distance_to(center))
+		samples += 1
+
 func _initialize() -> void:
 	call_deferred("_run")
 
@@ -20,20 +33,83 @@ func _release_input() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "rotate_camera_left", "rotate_camera_right"]:
 		Input.action_release(action)
 
+func _teleport_player(player: CharacterBody3D, destination: Vector3, velocity: Vector3 = Vector3.ZERO) -> void:
+	player.position = destination
+	player.velocity = velocity
+	player.reset_physics_interpolation()
+
+func _scroll_camera(button: MouseButton, notches: int = 1) -> void:
+	for notch in range(notches):
+		for pressed in [true, false]:
+			var event := InputEventMouseButton.new()
+			event.device = InputEvent.DEVICE_ID_MOUSE
+			event.button_index = button
+			event.pressed = pressed
+			event.position = root.get_visible_rect().size * 0.5
+			# Local viewport coordinates avoid headless window/stretch conversions.
+			root.push_input(event, true)
+
+func _check_camera_zoom(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
+	_release_input()
+	await _tick(90)
+	var initial_size := camera.size
+	var initial_transform := camera.transform
+	var initial_frame := sprite.frame
+	var initial_position := player.position
+	var minimum: float = camera.get(&"min_zoom_size")
+	var maximum: float = camera.get(&"max_zoom_size")
+	_scroll_camera(MOUSE_BUTTON_WHEEL_UP)
+	_check(is_equal_approx(camera.size, initial_size), "Wheel input must set a smooth zoom target rather than snapping the view.")
+	await _tick(60)
+	_check(camera.size < initial_size, "Wheel up must zoom in by reducing orthographic size.")
+	_scroll_camera(MOUSE_BUTTON_WHEEL_DOWN)
+	await _tick(60)
+	_check(absf(camera.size - initial_size) < 0.01, "Opposite wheel steps must restore the previous zoom.")
+	# UI gets first chance at scrolling; gameplay must not consume it behind a panel.
+	var panel := Panel.new()
+	panel.size = root.get_visible_rect().size
+	panel.mouse_force_pass_scroll_events = false
+	root.add_child(panel)
+	await _tick(2)
+	_scroll_camera(MOUSE_BUTTON_WHEEL_UP)
+	await _tick(30)
+	_check(absf(camera.size - initial_size) < 0.01, "Scrolling over blocking UI must not zoom the camera.")
+	panel.queue_free()
+	await _tick(2)
+	_scroll_camera(MOUSE_BUTTON_WHEEL_UP, 40)
+	await _tick(90)
+	_check(is_equal_approx(camera.size, minimum), "Repeated wheel-up input must clamp at the minimum size.")
+	_scroll_camera(MOUSE_BUTTON_WHEEL_DOWN)
+	await _tick(60)
+	_check(camera.size > minimum, "Zoom must reverse immediately away from its lower limit.")
+	_scroll_camera(MOUSE_BUTTON_WHEEL_DOWN, 40)
+	await _tick(90)
+	_check(is_equal_approx(camera.size, maximum), "Repeated wheel-down input must clamp at the maximum size.")
+	camera.clear_current(false)
+	_scroll_camera(MOUSE_BUTTON_WHEEL_UP)
+	await _tick(3)
+	camera.make_current()
+	await _tick(30)
+	_check(is_equal_approx(camera.size, maximum), "An inactive camera must ignore wheel input.")
+	_check(camera.transform.is_equal_approx(initial_transform), "Zoom must preserve the camera's orbit position and tilt.")
+	_check(sprite.frame == initial_frame and player.position.distance_to(initial_position) < 0.01, "Zoom must not change character position or facing.")
+
 func _check_camera_rotation(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
 	_release_input()
-	await _tick(2)
+	await _tick(90)
 	var initial_transform := camera.transform
 	var initial_size := camera.size
 	var player_start := player.position
+	var initial_offset := camera.global_position - player.global_position
 	Input.action_press("rotate_camera_left")
 	await _tick(60)
 	_release_input()
 	_check(initial_transform.basis.z.signed_angle_to(camera.basis.z, Vector3.UP) > 0.5, "Q must orbit the camera left.")
-	_check(is_equal_approx(camera.position.length(), initial_transform.origin.length()), "Orbit must retain camera distance.")
-	_check(is_equal_approx(camera.position.y, initial_transform.origin.y), "Orbit must retain camera height.")
+	var orbit_offset := camera.global_position - player.global_position
+	_check(is_equal_approx(orbit_offset.length(), initial_offset.length()), "Orbit must retain camera distance from the player.")
+	_check(is_equal_approx(orbit_offset.y, initial_offset.y), "Orbit must retain camera height above the player.")
 	_check(is_equal_approx(camera.basis.z.y, initial_transform.basis.z.y) and is_equal_approx(camera.size, initial_size), "Orbit must retain tilt and zoom.")
-	_check(camera.basis.z.normalized().dot(camera.position.normalized()) > 0.999, "Camera must keep looking toward the map center.")
+	_check(camera.global_basis.z.normalized().dot(orbit_offset.normalized()) > 0.999, "Camera must keep looking toward the player.")
 	_check(player.position.distance_to(player_start) < 0.01, "Orbit alone must not move the player.")
 	var stopped_transform := camera.transform
 	await _tick(3)
@@ -45,8 +121,7 @@ func _check_camera_rotation(player: CharacterBody3D, sprite: Sprite3D, camera: C
 	_check(camera.transform.is_equal_approx(stopped_transform), "Opposing camera inputs must cancel.")
 	var directions: Array[Vector2] = [Vector2.RIGHT, Vector2(1, 1), Vector2.DOWN, Vector2(-1, 1), Vector2.LEFT, Vector2(-1, -1), Vector2.UP, Vector2(1, -1)]
 	for row in range(directions.size()):
-		player.position = Vector3(0, 0.02, 0)
-		player.velocity = Vector3.ZERO
+		_teleport_player(player, Vector3(0, 0.02, 0))
 		await _tick(5)
 		var intent := directions[row]
 		if intent.x != 0:
@@ -64,13 +139,66 @@ func _check_camera_rotation(player: CharacterBody3D, sprite: Sprite3D, camera: C
 	Input.action_press("rotate_camera_right")
 	await _tick(60)
 	_release_input()
-	_check(camera.position.distance_to(initial_transform.origin) < 0.1, "E must reverse the Q orbit back to its starting position.")
+	await _tick(60)
+	_check((camera.global_position - player.global_position).distance_to(initial_offset) < 0.01, "Reversing the orbit must restore its offset around the player's new position.")
 	_check(camera.basis.z.dot(initial_transform.basis.z) > 0.999, "Reversing the orbit must restore the starting orientation.")
+
+func _check_camera_follow(player: CharacterBody3D, camera: Camera3D) -> void:
+	_release_input()
+	_teleport_player(player, Vector3(0, 0.02, 0))
+	await _tick(90)
+	_check(camera.get(&"follow_target") == player, "The world camera must be wired to follow the player.")
+	_check(ProjectSettings.get_setting("physics/common/physics_interpolation"), "Player rendering must use physics interpolation.")
+	_check(camera.physics_interpolation_mode == Node.PHYSICS_INTERPOLATION_MODE_OFF, "The manually positioned camera must not be interpolated twice.")
+	var probe := CameraFollowProbe.new()
+	probe.player = player
+	probe.camera = camera
+	probe.process_priority = 100
+	root.add_child(probe)
+	var initial_offset := camera.global_position - player.global_position
+	var initial_basis := camera.global_basis
+	var initial_size := camera.size
+	var player_start := player.global_position
+	var camera_start := camera.global_position
+	Input.action_press("move_right")
+	await _tick(30)
+	_release_input()
+	var player_delta := player.global_position - player_start
+	var camera_delta := camera.global_position - camera_start
+	_check(camera_delta.dot(player_delta) > 0.5, "Camera must translate with the moving player.")
+	var follow_lag := (camera.global_position - player.global_position).distance_to(initial_offset)
+	_check(follow_lag < 0.15, "Camera must not add a trailing delay beyond the physics/render interpolation interval.")
+	Input.action_press("move_left")
+	await _tick(15)
+	_release_input()
+	await _tick(3)
+	_check(probe.samples > 0 and probe.max_center_error < 0.1, "Rendered player must stay centered through movement, reversal, and stopping.")
+	probe.queue_free()
+	_check((camera.global_position - player.global_position).distance_to(initial_offset) < 0.01, "Camera must stop with the player without a catch-up tail.")
+	_check(camera.global_basis.is_equal_approx(initial_basis) and is_equal_approx(camera.size, initial_size), "Following must retain camera orientation and zoom.")
+	var viewport_center := root.get_visible_rect().get_center()
+	_check(camera.unproject_position(player.global_position).distance_to(viewport_center) < 1.0, "The stopped player must be centered in the viewport.")
+	var initial_rotation := player.rotation
+	player.rotation.y += PI / 2.0
+	player.reset_physics_interpolation()
+	await _tick(3)
+	_check(camera.global_basis.is_equal_approx(initial_basis), "Player rotation must not rotate the camera.")
+	player.rotation = initial_rotation
+	player.reset_physics_interpolation()
+	# A missing target leaves the camera at its last center rather than jumping home.
+	camera.set(&"follow_target", null)
+	var detached_position := camera.global_position
+	Input.action_press("move_right")
+	await _tick(15)
+	_release_input()
+	_check(camera.global_position.is_equal_approx(detached_position), "Camera must retain its center when its follow target is removed.")
+	camera.set(&"follow_target", player)
+	await _tick(90)
+	_check((camera.global_position - player.global_position).distance_to(initial_offset) < 0.01, "Camera must resume following after its target is restored.")
 
 func _check_world_facing(player: CharacterBody3D, sprite: Sprite3D) -> void:
 	_release_input()
-	player.position = Vector3(0, 0.02, 0)
-	player.velocity = Vector3.ZERO
+	_teleport_player(player, Vector3(0, 0.02, 0))
 	Input.action_press("move_down")
 	await _tick(8)
 	_release_input()
@@ -105,8 +233,7 @@ func _check_world_facing(player: CharacterBody3D, sprite: Sprite3D) -> void:
 func _check_camera_free_physics(player: CharacterBody3D, sprite: Sprite3D, camera: Camera3D) -> void:
 	camera.clear_current(false)
 	_check(root.get_camera_3d() == null, "Regression check requires no active camera.")
-	player.position = Vector3(0, 5, 0)
-	player.velocity = Vector3(4, 0, 0)
+	_teleport_player(player, Vector3(0, 5, 0), Vector3(4, 0, 0))
 	var previous_frame := sprite.frame
 	Input.action_press("move_right")
 	await _tick(10)
@@ -139,8 +266,7 @@ func _run() -> void:
 	var directions: Array[Vector2] = [Vector2.RIGHT, Vector2(1, 1), Vector2.DOWN, Vector2(-1, 1), Vector2.LEFT, Vector2(-1, -1), Vector2.UP, Vector2(1, -1)]
 	for row in range(8):
 		_release_input()
-		player.position = Vector3(0, 0.02, 0)
-		player.velocity = Vector3.ZERO
+		_teleport_player(player, Vector3(0, 0.02, 0))
 		await _tick(5)
 		var intent: Vector2 = directions[row]
 		if intent.x != 0:
@@ -161,16 +287,14 @@ func _run() -> void:
 		_check(sprite.frame == row, "Idle must retain the last facing.")
 		_check(player.position.distance_to(stopped) < 0.01, "Player must stop when input is released.")
 	# W + D moves along world -Z at this camera angle, into the tall block.
-	player.position = Vector3(-4, 0.02, 0)
-	player.velocity = Vector3.ZERO
+	_teleport_player(player, Vector3(-4, 0.02, 0))
 	Input.action_press("move_up")
 	Input.action_press("move_right")
 	await _tick(90)
 	_check(player.position.z > -1.8 and player.position.z < -1.6, "Tall block must stop the player at its near face.")
 	_release_input()
 	# S + D moves along world +X toward the map boundary.
-	player.position = Vector3(10, 0.02, 0)
-	player.velocity = Vector3.ZERO
+	_teleport_player(player, Vector3(10, 0.02, 0))
 	Input.action_press("move_down")
 	Input.action_press("move_right")
 	await _tick(90)
@@ -178,8 +302,10 @@ func _run() -> void:
 	_check(player.is_on_floor(), "Player must remain grounded after collision.")
 	_release_input()
 	await _check_camera_free_physics(player, sprite, camera)
+	await _check_camera_zoom(player, sprite, camera)
 	await _check_camera_rotation(player, sprite, camera)
 	await _check_world_facing(player, sprite)
+	await _check_camera_follow(player, camera)
 	if failures == 0:
-		print("PASS: bindings, eight directions, speed, idle, grounding, obstacles, boundaries, camera-free physics/recovery, camera rotation/movement, and persistent world facing.")
+		print("PASS: bindings, eight directions, speed, idle, grounding, obstacles, boundaries, camera-free physics/recovery, mouse-wheel zoom, camera rotation/movement, persistent world facing, and player following.")
 	quit(0 if failures == 0 else 1)

@@ -1,55 +1,54 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://c4we7aes31dqt"]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
-[ext_resource type="Script" path="res://scripts/prototype_map.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/orbit_camera.gd" id="3"]
+[ext_resource type="Script" uid="uid://46mjmhbkyq8s" path="res://scripts/prototype_map.gd" id="2"]
+[ext_resource type="Script" uid="uid://bmyom615rbuc1" path="res://scripts/orbit_camera.gd" id="3"]
 
 [sub_resource type="Environment" id="Environment"]
 background_mode = 1
-background_color = Color(0.10, 0.13, 0.18, 1)
+background_color = Color(0.1, 0.13, 0.18, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.86, 1, 1)
 ambient_light_energy = 0.65
-tonemap_mode = 0
 
 [sub_resource type="LabelSettings" id="HelpStyle"]
 font_size = 20
-font_color = Color(1, 1, 1, 1)
 shadow_size = 3
 shadow_color = Color(0, 0, 0, 0.8)
 
-[node name="World" type="Node3D"]
+[node name="World" type="Node3D" unique_id=1345962942]
 
-[node name="Map" type="Node3D" parent="."]
+[node name="Map" type="Node3D" parent="." unique_id=1673121804]
 script = ExtResource("2")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=993980734]
 environment = SubResource("Environment")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-55, -30, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1696859570]
+transform = Transform3D(0.8660254, 0.40957603, -0.28678823, 0, 0.57357645, 0.81915206, 0.5, -0.7094065, 0.49673176, 0, 0, 0)
 light_color = Color(1, 0.94, 0.84, 1)
 light_energy = 1.1
 shadow_enabled = true
 
-[node name="Player" parent="." instance=ExtResource("1")]
-position = Vector3(0, 0.05, 0)
+[node name="Player" parent="." unique_id=573006074 instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("follow_target") unique_id=671750590]
 process_physics_priority = -1
-position = Vector3(18, 18, 18)
-rotation_degrees = Vector3(-35.26439, 45, 0)
+transform = Transform3D(0.70710677, -0.40824828, 0.57735026, 0, 0.8164966, 0.57735026, -0.70710677, -0.40824828, 0.57735026, 18, 18, 18)
 projection = 1
 current = true
 size = 32.0
 far = 100.0
 script = ExtResource("3")
+follow_target = NodePath("../Player")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=177097192]
 
-[node name="Controls" type="Label" parent="HUD"]
+[node name="Controls" type="Label" parent="HUD" unique_id=1055171722]
 offset_left = 24.0
 offset_top = 20.0
-text = "MAP PROTOTYPE\nWASD — move · Combine keys for diagonals\nQ / E — rotate camera"
+text = "MAP PROTOTYPE
+WASD — move · Combine keys for diagonals
+Q / E — rotate camera · Mouse wheel — zoom"
 label_settings = SubResource("HelpStyle")
-mouse_filter = 2
