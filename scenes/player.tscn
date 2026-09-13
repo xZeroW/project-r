@@ -4,13 +4,22 @@
 [ext_resource type="Script" uid="uid://cjbeun4wjnh7j" path="res://scripts/components/player_input.gd" id="2"]
 [ext_resource type="Script" uid="uid://c3anopeq2qeyk" path="res://scripts/components/character_movement.gd" id="3"]
 [ext_resource type="Script" uid="uid://dmrdv8hxt6mc8" path="res://scripts/components/directional_sprite.gd" id="4"]
-[ext_resource type="SpriteFrames" path="res://assets/characters/knight/example_frames.tres" id="5"]
-[ext_resource type="Script" path="res://scripts/components/click_movement.gd" id="6"]
-[ext_resource type="Script" path="res://scripts/components/destination_marker.gd" id="7"]
+[ext_resource type="SpriteFrames" uid="uid://cghilov4dlx27" path="res://assets/characters/knight/example_frames.tres" id="5"]
+[ext_resource type="Script" uid="uid://c3w6n70ge3od8" path="res://scripts/components/click_movement.gd" id="6"]
+[ext_resource type="Script" uid="uid://cdm0kamlkl2s6" path="res://scripts/components/destination_marker.gd" id="7"]
+[ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="8"]
 
-[sub_resource type="CapsuleShape3D" id="PlayerShape"]
-radius = 0.25
-height = 1.2
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ur7pv"]
+radius = 0.5620117
+height = 1.8496094
+
+[sub_resource type="ShaderMaterial" id="ContactShadowMaterial"]
+render_priority = -1
+shader = ExtResource("8")
+
+[sub_resource type="PlaneMesh" id="ContactShadowMesh"]
+material = SubResource("ContactShadowMaterial")
+size = Vector2(1, 1)
 
 [sub_resource type="StandardMaterial3D" id="DestinationMaterial"]
 shading_mode = 0
@@ -28,8 +37,13 @@ floor_snap_length = 0.2
 script = ExtResource("1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=453536122]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
-shape = SubResource("PlayerShape")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0700531, 0)
+shape = SubResource("CapsuleShape3D_ur7pv")
+
+[node name="ContactShadow" type="MeshInstance3D" parent="CollisionShape3D" unique_id=334623506]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07852481, -0.66880465, 0)
+cast_shadow = 0
+mesh = SubResource("ContactShadowMesh")
 
 [node name="PlayerInput" type="Node" parent="." unique_id=373214183]
 unique_name_in_owner = true
@@ -39,14 +53,14 @@ script = ExtResource("2")
 unique_name_in_owner = true
 script = ExtResource("3")
 
-[node name="ClickMovement" type="Node" parent="."]
+[node name="ClickMovement" type="Node" parent="." unique_id=1210109374]
 unique_name_in_owner = true
 script = ExtResource("6")
 
-[node name="DestinationMarker" type="MeshInstance3D" parent="."]
+[node name="DestinationMarker" type="MeshInstance3D" parent="." unique_id=1511161749]
 unique_name_in_owner = true
-top_level = true
 physics_interpolation_mode = 2
+top_level = true
 visible = false
 cast_shadow = 0
 mesh = SubResource("DestinationRing")
@@ -54,11 +68,13 @@ script = ExtResource("7")
 
 [node name="DirectionalSprite" type="AnimatedSprite3D" parent="." unique_id=1859005186]
 unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9478024, 0)
+cast_shadow = 0
 offset = Vector2(0, 56)
-pixel_size = 0.015
-billboard = 1
-alpha_cut = 1
+pixel_size = 0.0184
+billboard = 2
 texture_filter = 0
+render_priority = 1
 sprite_frames = ExtResource("5")
 animation = &"idle_south"
 autoplay = "idle_south"

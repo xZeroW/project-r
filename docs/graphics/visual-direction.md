@@ -102,7 +102,20 @@ Record approved outcomes in this document before turning them into asset-product
 
 ## Decision history
 
+### Confirmed — Player contact shadow
+
+The player uses a soft, circular black contact shadow instead of casting the
+knight silhouette. `ContactShadow` is a horizontal, one-unit-wide plane under
+the player's collision shape, 0.015 units above the current capsule bottom
+(local Y = -0.9098047 for the 1.8496094-unit-tall capsule). Update this placement
+if the capsule height changes. The unlit radial shader fades to transparent at
+the edge; both the plane and the character sprite have shadow casting disabled.
+The plane follows the character and is intended for the current flat-ground
+prototype.
+
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
 | 2026-09-12 | Confirmed | Use Ragnarok Online (2002) as the visual reference, with 2D characters in 3D maps. | Project owner's initial brief. |
 | 2026-09-12 | Confirmed | Use existing free sprites initially; defer custom sprite creation. | Project owner's follow-up brief. |
+| 2026-09-13 | Confirmed | Replace the player's silhouette shadow with a soft circular contact shadow at its feet. | Project owner's grounding/shadow request. |
+| 2026-09-13 | Confirmed | Occlusion: boundary walls use 2.2-unit-tall visual meshes with a 0.75-unit interior overhang. The overhang places a foreground wall face over the billboard at north/west faces without changing the 0.5-unit collision boundary. | Reported prototype defect + rendered visible-versus-hidden comparison. |

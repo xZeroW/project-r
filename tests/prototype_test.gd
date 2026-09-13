@@ -348,7 +348,7 @@ func _run() -> void:
 	Input.action_press("move_up")
 	Input.action_press("move_right")
 	await _tick(90)
-	_check(player.position.z > -1.8 and player.position.z < -1.6, "Tall block must stop the player at its near face.")
+	_check(player.position.z > -1.55 and player.position.z < -1.45, "Tall block must stop the player at its near face.")
 	_check(String(sprite.animation).begins_with("idle_"), "A fully blocked character must not walk in place.")
 	_release_input()
 	# S + D moves along world +X toward the map boundary.
@@ -356,7 +356,7 @@ func _run() -> void:
 	Input.action_press("move_down")
 	Input.action_press("move_right")
 	await _tick(90)
-	_check(player.position.x > 11.3 and player.position.x < 11.6, "Boundary wall must keep the player on the map.")
+	_check(player.position.x > 11.1 and player.position.x < 11.4, "Boundary wall must keep the player on the map.")
 	_check(player.is_on_floor(), "Player must remain grounded after collision.")
 	_release_input()
 	await _check_camera_free_physics(player, sprite, camera)
