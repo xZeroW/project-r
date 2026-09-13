@@ -69,6 +69,12 @@ camera_zoom_out={
 ]
 }
 
+click_move={
+"deadzone": 0.2,
+"events": [Object(InputEventMouseButton,"device":-1,"button_index":1)
+]
+}
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

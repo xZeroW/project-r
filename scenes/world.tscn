@@ -18,7 +18,7 @@ shadow_color = Color(0, 0, 0, 0.8)
 
 [node name="World" type="Node3D" unique_id=1345962942]
 
-[node name="Map" type="Node3D" parent="." unique_id=1673121804]
+[node name="Map" type="NavigationRegion3D" parent="." unique_id=1673121804]
 script = ExtResource("2")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=993980734]
@@ -49,6 +49,6 @@ follow_target = NodePath("../Player")
 offset_left = 24.0
 offset_top = 20.0
 text = "MAP PROTOTYPE
-WASD — move · Combine keys for diagonals
+Left click — move to destination · WASD — move / cancel route
 Q / E — rotate camera · Mouse wheel — zoom"
 label_settings = SubResource("HelpStyle")

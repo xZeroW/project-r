@@ -5,10 +5,23 @@
 [ext_resource type="Script" uid="uid://c3anopeq2qeyk" path="res://scripts/components/character_movement.gd" id="3"]
 [ext_resource type="Script" uid="uid://dmrdv8hxt6mc8" path="res://scripts/components/directional_sprite.gd" id="4"]
 [ext_resource type="SpriteFrames" path="res://assets/characters/knight/example_frames.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/components/click_movement.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/components/destination_marker.gd" id="7"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.25
 height = 1.2
+
+[sub_resource type="StandardMaterial3D" id="DestinationMaterial"]
+shading_mode = 0
+albedo_color = Color(0.3, 1, 0.85, 1)
+
+[sub_resource type="TorusMesh" id="DestinationRing"]
+material = SubResource("DestinationMaterial")
+inner_radius = 0.23
+outer_radius = 0.3
+rings = 24
+ring_segments = 8
 
 [node name="Player" type="CharacterBody3D" unique_id=212500841]
 floor_snap_length = 0.2
@@ -25,6 +38,19 @@ script = ExtResource("2")
 [node name="CharacterMovement" type="Node" parent="." unique_id=897067084]
 unique_name_in_owner = true
 script = ExtResource("3")
+
+[node name="ClickMovement" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6")
+
+[node name="DestinationMarker" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+top_level = true
+physics_interpolation_mode = 2
+visible = false
+cast_shadow = 0
+mesh = SubResource("DestinationRing")
+script = ExtResource("7")
 
 [node name="DirectionalSprite" type="AnimatedSprite3D" parent="." unique_id=1859005186]
 unique_name_in_owner = true
