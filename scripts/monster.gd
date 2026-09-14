@@ -5,7 +5,7 @@ signal attack_started
 signal attack_finished
 
 @export var target: CharacterBody3D
-@export var move_speed: float = 2.5
+@export var stats: CharacterStats
 @export var attack_range: float = 1.5
 @export var attack_duration: float = 2.0
 
@@ -18,6 +18,7 @@ var _attack_time_remaining: float = 0.0
 
 func _ready() -> void:
 	assert(target != null, "Monster requires a player target.")
+	assert(stats != null, "Monster requires character stats.")
 	# The navmesh surface sits above the CharacterBody origin, so this must
 	# exceed the vertical offset before the agent advances to a horizontal point.
 	_navigation_agent.path_desired_distance = 0.5
@@ -52,7 +53,7 @@ func _physics_process(delta: float) -> void:
 
 	var next_position := _navigation_agent.get_next_path_position()
 	var direction := global_position.direction_to(next_position)
-	velocity = Vector3(direction.x, 0.0, direction.z) * move_speed
+	velocity = Vector3(direction.x, 0.0, direction.z) * stats.movement_speed
 	move_and_slide()
 
 func _set_target_when_navigation_is_ready() -> void:

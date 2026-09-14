@@ -4,6 +4,8 @@ extends CharacterBody3D
 # Faces screen-south in the map's initial 45-degree camera view.
 var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 
+@export var stats: CharacterStats
+
 @onready var input_component: PlayerInput = %PlayerInput
 @onready var movement_component: CharacterMovement = %CharacterMovement
 @onready var visual_component: DirectionalSprite = %DirectionalSprite
@@ -11,6 +13,8 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @onready var destination_marker: DestinationMarker = %DestinationMarker
 
 func _ready() -> void:
+	assert(stats != null, "Player requires character stats.")
+	movement_component.speed = stats.movement_speed
 	input_component.destination_requested.connect(_on_destination_requested)
 	click_movement.destination_changed.connect(destination_marker.show_destination)
 	click_movement.destination_cleared.connect(destination_marker.clear_destination)

@@ -1,20 +1,33 @@
 [gd_scene format=3 uid="uid://cxutb7e8p1vuc"]
 
 [ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="1_uwnm8"]
-[ext_resource type="Script" path="res://scripts/monster.gd" id="2_monster"]
+[ext_resource type="Script" uid="uid://chj4acytu1x6l" path="res://scripts/monster.gd" id="2_monster"]
+[ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="3_stats"]
+[ext_resource type="Texture2D" uid="uid://mec1vfnegfvm" path="res://assets/enemies/poring/poring.png" id="4_poring"]
 
-[sub_resource type="StandardMaterial3D" id="BlueMaterial"]
-shading_mode = 0
-albedo_color = Color(0.1, 0.35, 1, 1)
-billboard_mode = 1
+[sub_resource type="Resource" id="MonsterStats"]
+resource_local_to_scene = true
+script = ExtResource("3_stats")
+movement_speed = 2.5
 
-[sub_resource type="QuadMesh" id="SquareMesh"]
-material = SubResource("BlueMaterial")
-size = Vector2(1.5, 1.5)
+[sub_resource type="AtlasTexture" id="PoringIdle1"]
+atlas = ExtResource("4_poring")
+region = Rect2(0, 0, 55, 60)
+
+[sub_resource type="SpriteFrames" id="PoringFrames"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("PoringIdle1")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 4.0
+}]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1cbnp"]
-radius = 0.5620117
-height = 1.8496094
+radius = 0.54418945
+height = 1.0883789
 
 [sub_resource type="ShaderMaterial" id="ContactShadowMaterial"]
 render_priority = -1
@@ -26,18 +39,25 @@ size = Vector2(1, 1)
 
 [node name="Monster" type="CharacterBody3D" unique_id=1245411007 groups=["monsters"]]
 script = ExtResource("2_monster")
+stats = SubResource("MonsterStats")
 
-[node name="Visual" type="MeshInstance3D" parent="." unique_id=24812990]
-transform = Transform3D(0.95, 0, 0, 0, 0.95, 0, 0, 0, 0.95, 0, 0.75, 0)
+[node name="Visual" type="AnimatedSprite3D" parent="." unique_id=24812990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42542845, 0)
 cast_shadow = 0
-mesh = SubResource("SquareMesh")
+pixel_size = 0.026
+billboard = 2
+texture_filter = 0
+render_priority = 1
+sprite_frames = SubResource("PoringFrames")
+animation = &"idle"
+autoplay = "idle"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1985358451]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68384284, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.481018, 0)
 shape = SubResource("CapsuleShape3D_1cbnp")
 
 [node name="ContactShadow" type="MeshInstance3D" parent="CollisionShape3D" unique_id=1303855422]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07852481, -0.66880465, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.47948387, 0)
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_c47ug")
 
