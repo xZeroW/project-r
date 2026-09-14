@@ -46,9 +46,14 @@ func attack(other: MeleeCombat) -> bool:
 func take_damage(data: DamageData) -> void:
 	if stats.current_health <= 0.0 or invulnerability > 0.0 or data.amount <= 0.0:
 		return
+	var previous_health := stats.current_health
 	stats.current_health = maxf(0.0, stats.current_health - maxf(0.0, data.amount - stats.armour))
+	var resolved := DamageData.new()
+	resolved.amount = data.amount
+	resolved.source = data.source
+	resolved.applied_amount = previous_health - stats.current_health
 	invulnerability = 0.15
-	damaged.emit(data)
+	damaged.emit(resolved)
 	if stats.current_health <= 0.0:
 		body.velocity = Vector3.ZERO
 		(body.get_node("CollisionShape3D") as CollisionShape3D).set_deferred("disabled", true)

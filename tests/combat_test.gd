@@ -28,6 +28,11 @@ func run() -> void:
 	check(player_combat.stats != enemy_combat.stats, "Actors must own separate stats.")
 	check(player_combat.attack(enemy_combat), "Nearby melee attack must succeed.")
 	check(enemy_combat.stats.current_health == 80.0, "Player must deal 20 damage.")
+	var enemy_numbers := monster.get_node("DamageNumbers") as DamageNumbers
+	check(enemy_numbers.get_child_count() == 1, "A hit must spawn a damage number.")
+	var first_number := enemy_numbers.get_child(0) as Label
+	check(first_number.text == "20", "Damage number must show health lost.")
+	check(first_number.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Damage numbers must not intercept clicks.")
 	check(not player_combat.attack(enemy_combat), "Cooldown must prevent repeated hits.")
 	check(enemy_combat.attack(player_combat), "Monster must damage player.")
 	check(player_combat.stats.current_health == 90.0, "Monster must deal 10 damage.")
@@ -52,15 +57,20 @@ func run() -> void:
 	enemy_combat.stats.armour = 5.0
 	check(player_combat.attack(enemy_combat), "Melee attack against armour must succeed.")
 	check(enemy_combat.stats.current_health == 65.0, "Armour must reduce melee damage.")
+	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "15", "Popup must reflect armour-reduced damage.")
 	var data := DamageData.new()
 	data.amount = 1000.0
 	data.source = player
 	enemy_combat.invulnerability = 0.0
 	enemy_combat.take_damage(data)
 	check(enemy_combat.stats.current_health == 0.0, "Lethal damage must clamp health to zero.")
+	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "65", "Lethal popup must show actual remaining health lost.")
 	check(not enemy_combat.attack(player_combat), "Dead actors cannot attack.")
 	await process_frame
 	check((monster.get_node("CollisionShape3D") as CollisionShape3D).disabled, "Death must disable collision.")
+	enemy_numbers._process(1.0)
+	await process_frame
+	check(enemy_numbers.get_child_count() == 0, "Expired damage numbers must be freed.")
 	world.queue_free()
 	await process_frame
 	if failures == 0:

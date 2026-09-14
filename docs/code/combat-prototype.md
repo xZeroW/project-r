@@ -20,12 +20,27 @@ status: confirmed
 
 ## Verification
 
+### Floating damage numbers
+
+Both actors compose `DamageNumbers`, a screen-space CanvasLayer listening to
+`MeleeCombat.damaged`. The resolved `DamageData.applied_amount` reports actual health
+lost after armour and remaining-health clamping, without mutating the incoming payload.
+Positive damage creates an outlined label above the hit location (gold on monsters,
+red on the player). It rises 48 UI pixels with a slight alternating sideways drift,
+fades out, and is freed after 0.85 seconds. Zero damage and rejected hits show no number.
+Labels ignore mouse input and project after the camera updates, using an interpolated
+world position captured at impact. They remain at that hit location if the victim moves.
+
+Combat tests cover displayed damage, armour mitigation, lethal clamping, click-through,
+and popup cleanup alongside existing damage checks.
+
 `godot --headless --path . --script res://tests/combat_test.gd` checks damage in both directions, armour, cooldown, range, windup/dodge, independent health, and death collision cleanup. `tests/targeting_test.gd` checks click-to-attack.
 
 ## Decision history
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-14 | Confirmed | Show floating UI damage numbers for actual health lost on player and monsters. | Owner's damage-number request; color/timing are prototype defaults. |
 | 2026-09-14 | Confirmed | Remove the Space nearby-attack shortcut; use click-to-attack. | Owner's request after testing targeting. |
 | 2026-09-14 | Confirmed | Clicking selects, approaches, and repeats attacks; WASD/ground clicks cancel. | Owner's chosen approach-and-auto-attack behavior. |
 | 2026-09-13 | Confirmed | Implement the first player/monster combat loop using existing stats and health UI. | Owner's combat-loop request. |
