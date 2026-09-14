@@ -4,49 +4,66 @@ status: confirmed
 
 # Code — Basic Monster Prototype
 
-## Current implementation — Aggression
+## Current implementation — Monster lifecycle
 
-The monster Inspector exposes `aggressive` (default **true**) and `aggro_radius`
-(default **6.0** world units). Aggressive monsters chase and attack their assigned
-living player only while the player is inside that horizontal ground-plane radius.
-Outside the radius, or with aggression disabled, the monster stops and cancels any
-pending attack. Re-entry starts a fresh engagement. A zero radius disables engagement.
-Non-aggressive monsters remain idle, including when damaged; retaliation is not enabled.
-The monster stays where it stopped rather than returning to its spawn.
+`Monster.State` explicitly tracks **IDLE**, **ENGAGED**, **RETURNING**, and **DEAD**.
+The Inspector exposes:
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `aggressive` | true | Automatically acquire the assigned living player nearby. |
+| `aggro_radius` | 6.0 | Horizontal distance from monster to player for initial acquisition only; zero disables automatic acquisition. |
+| `leash_distance` | 10.0 | Maximum horizontal distance from spawn for both monster and engaged player. |
+| `respawn_delay` | 5.0 | Seconds from death until respawn (minimum 0.7). |
+
+Passive monsters remain idle until the assigned player hits them. A valid hit starts
+engagement regardless of aggression, provided the attacker is inside the spawn leash.
+Changing aggression or leaving the aggro radius does not cancel an existing engagement.
+Crossing the spawn leash, losing the target, or target death cancels windup and starts
+returning home. Return navigation refreshes at most five times per second. Returning
+monsters cannot attack, receive damage, or be selected. Arrival restores full health
+and resets cooldowns; a blocked/unreachable return snaps home after three seconds of
+no movement so the monster cannot remain permanently invulnerable.
+
+Death disables collision and combat, hides health UI and contact shadow, and fades the
+current sprite over 0.6 seconds. This is procedural death feedback, not a sliced death
+clip. After the respawn delay, the same entity resets to its original world spawn with
+full health, idle sprite playback, collision, shadow, and health UI restored. Teleport
+resets call `reset_physics_interpolation()` to avoid streaking across the map.
 
 Damage is implemented by the shared melee component; see [Combat prototype](combat-prototype.md).
-The simulated-attack description below records the earlier prototype phase.
-
-`tests/aggro_test.gd` verifies passive behavior, radius boundaries, disabling aggression
-during windup, leaving the radius, re-entry, and zero radius.
+`tests/aggro_test.gd` verifies passive retaliation, acquisition vs engagement,
+leash cancellation, return immunity/healing, death fade, and full respawn reset.
 
 ## Confirmed — Poring sprite presentation
 
 `scenes/monster.tscn` is a reusable monster scene with a `CharacterBody3D` root in the
 `monsters` group and a visual child. Its camera-facing `AnimatedSprite3D` uses the
-eight standing frames from the first row of `assets/enemies/poring/poring.png` at 4 FPS.
+one standing frame from the first row of `assets/enemies/poring/poring.png`.
 One instance stands near the player at `(3, 0, -1)` in `scenes/world.tscn`.
 
 The monster's capsule collision shape blocks the player on physics layer 1.
 `scripts/monster.gd` follows the assigned player through the baked navigation mesh,
 retargeting at most five times per second. Its 0.5-unit waypoint tolerance accounts
 for the navigation surface sitting above the monster body's origin. It stops within
-1.5 units of the player and enters a two-second simulated attack. The monster cannot
+1.5 units of the player and enters a two-second attack windup. The monster cannot
 move during an attack; when its timer ends, it attacks again if the player remains in
 range or resumes following. `attack_started` and `attack_finished` signals are hooks
-for future animation and damage. This placeholder has no animations or damage.
+for animation; damage is resolved through `MeleeCombat` at completion.
 
 The poring walking, attack, hurt, and dying regions remain available in the source sheet
 but are not yet mapped to gameplay states.
 
 Both the player and monster also show a screen-space UI health bar anchored to the
 character's projected world position. Its green fill follows the owning character's
-`CharacterStats.health` value relative to its `max_health`.
+`CharacterStats.current_health` value relative to its `max_health`.
 
 ## Decision history
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-14 | Confirmed | Passive retaliation, separate spawn leash, return home, and death/respawn lifecycle supersede radius-based disengagement. | Owner's approval of the next monster behavior loop. |
+| 2026-09-14 | Proposed | Leash 10 units, respawn 5 seconds, return immunity/full heal, three-second blocked return recovery, and death fade are prototype defaults. | Implementation choices. |
 | 2026-09-14 | Confirmed | Add configurable aggression and aggro radius; aggressive monsters engage players entering the radius. | Owner's aggro request. |
 | 2026-09-14 | Proposed | Default radius 6; disengage outside radius, and passive monsters do not retaliate. | Initial implementation behavior for playtesting. |
 | 2026-09-13 | Confirmed | Add a basic monster represented by a blue square without animations. | Project owner's brief. |

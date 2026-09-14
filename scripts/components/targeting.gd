@@ -27,7 +27,7 @@ func _ready() -> void:
 
 func select(enemy: MeleeCombat) -> void:
 	cancel()
-	if is_instance_valid(enemy) and enemy.stats.current_health > 0.0:
+	if is_instance_valid(enemy) and enemy.damage_enabled and enemy.stats.current_health > 0.0:
 		target = enemy
 
 func cancel() -> void:
@@ -41,7 +41,7 @@ func cancel() -> void:
 		_label.hide()
 
 func has_target() -> bool:
-	return is_instance_valid(target) and target.stats.current_health > 0.0
+	return is_instance_valid(target) and target.damage_enabled and target.stats.current_health > 0.0
 
 func _process(_delta: float) -> void:
 	if not has_target():

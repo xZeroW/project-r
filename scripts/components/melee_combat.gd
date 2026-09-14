@@ -14,6 +14,7 @@ signal died
 
 var cooldown: float = 0.0
 var invulnerability: float = 0.0
+var damage_enabled: bool = true
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
@@ -22,7 +23,7 @@ func _physics_process(delta: float) -> void:
 		visual.modulate = Color(1, 0.35, 0.35) if invulnerability > 0.0 else Color.WHITE
 
 func can_reach(other: MeleeCombat) -> bool:
-	if not is_instance_valid(other) or stats.current_health <= 0.0 or other.stats.current_health <= 0.0:
+	if not is_instance_valid(other) or not damage_enabled or not other.damage_enabled or stats.current_health <= 0.0 or other.stats.current_health <= 0.0:
 		return false
 	var offset := other.body.global_position - body.global_position
 	if Vector2(offset.x, offset.z).length() > reach or absf(offset.y) > 1.5:
@@ -44,7 +45,7 @@ func attack(other: MeleeCombat) -> bool:
 	return true
 
 func take_damage(data: DamageData) -> void:
-	if stats.current_health <= 0.0 or invulnerability > 0.0 or data.amount <= 0.0:
+	if not damage_enabled or stats.current_health <= 0.0 or invulnerability > 0.0 or data.amount <= 0.0:
 		return
 	var previous_health := stats.current_health
 	stats.current_health = maxf(0.0, stats.current_health - maxf(0.0, data.amount - stats.armour))

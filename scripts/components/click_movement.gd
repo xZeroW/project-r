@@ -66,7 +66,7 @@ func _resolve_click(body: CharacterBody3D) -> void:
 	var collider := hit.get("collider") as Node
 	if collider != null and collider.is_in_group(&"monsters"):
 		var enemy := collider.get_node_or_null("Combat") as MeleeCombat
-		if enemy != null and enemy.stats.current_health > 0.0:
+		if enemy != null and enemy.damage_enabled and enemy.stats.current_health > 0.0:
 			cancel()
 			enemy_selected.emit(enemy)
 		return

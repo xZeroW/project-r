@@ -55,6 +55,6 @@ func _process(delta: float) -> void:
 		if not popup.label.visible:
 			continue
 		var progress := popup.age / LIFETIME
-		var offset := Vector2(popup.side * 14.0 * progress, -RISE * progress)
-		popup.label.position = camera.unproject_position(popup.world_position) + offset - popup.label.size * 0.5
+		var screen_offset := Vector2(popup.side * 14.0 * progress, -RISE * progress)
+		popup.label.position = camera.unproject_position(popup.world_position) + screen_offset - popup.label.size * 0.5
 		popup.label.modulate.a = 1.0 - clampf((progress - 0.4) / 0.6, 0.0, 1.0)
