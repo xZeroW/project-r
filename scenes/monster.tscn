@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cxutb7e8p1vuc"]
 
+[ext_resource type="Script" path="res://scripts/components/melee_combat.gd" id="combat"]
+
 [ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="1_uwnm8"]
 [ext_resource type="Script" uid="uid://chj4acytu1x6l" path="res://scripts/monster.gd" id="2_monster"]
 [ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="3_stats"]
@@ -10,6 +12,7 @@
 resource_local_to_scene = true
 script = ExtResource("3_stats")
 movement_speed = 2.5
+attack_damage = 10.0
 
 [sub_resource type="AtlasTexture" id="PoringIdle1"]
 atlas = ExtResource("4_poring")
@@ -66,6 +69,13 @@ mesh = SubResource("PlaneMesh_c47ug")
 unique_name_in_owner = true
 path_desired_distance = 0.5
 target_desired_distance = 1.5
+
+[node name="Combat" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("combat")
+stats = SubResource("MonsterStats")
+reach = 1.5
+visual_path = NodePath("../Visual")
 
 [node name="HealthBar" type="CanvasLayer" parent="." unique_id=1729526202]
 layer = 10

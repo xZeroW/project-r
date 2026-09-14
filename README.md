@@ -18,10 +18,15 @@ See [Map and player prototype](docs/code/map-player-prototype.md) for implementa
 
 ## Validate
 
+Combat: **Space** attacks the nearest monster in melee range; **R** restarts the encounter.
+Hits reduce the existing health bars, flash red, and disable defeated characters.
+See [Combat prototype](docs/code/combat-prototype.md).
+
 ```sh
 godot --headless --editor --path . --import
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
+godot --headless --path . --script res://tests/combat_test.gd
 ```
 
 The integration checks cover physical WASD/Q/E bindings, all eight directions, consistent movement speed, retained idle facing, floor contact, obstacle/boundary collisions, camera-free physics with movement recovery, camera orbit/reversal, movement/facing after rotation, and persistent map-facing direction through full camera orbits. Mouse-wheel checks cover zoom direction, limits, reversal, UI input blocking, and inactive cameras. Follow checks cover render-frame centering during movement, reversal and stopping, independence from player rotation, and missing/restored targets.

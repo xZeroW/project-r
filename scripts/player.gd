@@ -5,6 +5,16 @@ extends CharacterBody3D
 var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 
 @export var stats: CharacterStats
+var _attack_requested: bool = false
+@onready var combat: MeleeCombat = %Combat
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("attack") and not event.is_echo():
+		_attack_requested = true
+		get_viewport().set_input_as_handled()
+	if event.is_action_pressed("restart_encounter") and not event.is_echo():
+		get_tree().reload_current_scene.call_deferred()
+		get_viewport().set_input_as_handled()
 
 @onready var input_component: PlayerInput = %PlayerInput
 @onready var movement_component: CharacterMovement = %CharacterMovement
@@ -20,11 +30,32 @@ func _ready() -> void:
 	click_movement.destination_cleared.connect(destination_marker.clear_destination)
 
 func _on_destination_requested(screen_position: Vector2) -> void:
+	if stats.current_health <= 0.0:
+		return
 	var camera := get_viewport().get_camera_3d()
 	if camera != null:
 		click_movement.request_destination(screen_position, camera)
 
 func _physics_process(delta: float) -> void:
+	if stats.current_health <= 0.0:
+		_attack_requested = false
+		click_movement.cancel()
+		velocity = Vector3.ZERO
+		return
+	if _attack_requested:
+		_attack_requested = false
+		var nearest: MeleeCombat
+		var distance: float = INF
+		for node: Node in get_tree().get_nodes_in_group("monsters"):
+			var candidate := node.get_node_or_null("Combat") as MeleeCombat
+			if candidate != null and combat.can_reach(candidate):
+				var candidate_distance := global_position.distance_squared_to(candidate.body.global_position)
+				if candidate_distance < distance:
+					nearest = candidate
+					distance = candidate_distance
+		if nearest != null and combat.attack(nearest):
+			click_movement.cancel()
+			_facing_direction = (nearest.body.global_position - global_position) * Vector3(1, 0, 1)
 	var camera := get_viewport().get_camera_3d()
 	var direction := Vector3.ZERO
 	# Without a camera, pause directional input but keep gravity and collisions active.

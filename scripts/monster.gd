@@ -10,6 +10,7 @@ signal attack_finished
 @export var attack_duration: float = 2.0
 
 @onready var _navigation_agent: NavigationAgent3D = %NavigationAgent3D
+@onready var combat: MeleeCombat = %Combat
 
 var _retarget_time: float = 0.0
 var _navigation_ready: bool = false
@@ -26,6 +27,14 @@ func _ready() -> void:
 	_set_target_when_navigation_is_ready.call_deferred()
 
 func _physics_process(delta: float) -> void:
+	if stats.current_health <= 0.0 or not is_instance_valid(target):
+		velocity = Vector3.ZERO
+		return
+	var target_combat := target.get_node_or_null("Combat") as MeleeCombat
+	if target_combat == null or target_combat.stats.current_health <= 0.0:
+		_is_attacking = false
+		velocity = Vector3.ZERO
+		return
 	if not _navigation_ready:
 		velocity = Vector3.ZERO
 		return
@@ -35,6 +44,8 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 		if _attack_time_remaining <= 0.0:
 			_is_attacking = false
+			combat.reach = attack_range
+			combat.attack(target_combat)
 			attack_finished.emit()
 		return
 
@@ -70,5 +81,5 @@ func _start_attack() -> void:
 	# Future presentation can connect attack_started to play its attack clip.
 	velocity = Vector3.ZERO
 	_is_attacking = true
-	_attack_time_remaining = attack_duration
+	_attack_time_remaining = attack_duration / maxf(stats.attack_speed, 0.01)
 	attack_started.emit()

@@ -7,6 +7,7 @@ extends Resource
 @export var mana: float = 100.0
 @export var movement_speed: float = 4.0
 @export var attack_speed: float = 1.0
+@export var attack_damage: float = 20.0
 @export var armour: float = 0.0
 @export var evasion: float = 0.0
 @export var block: float = 0.0
