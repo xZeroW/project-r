@@ -50,14 +50,8 @@ func run() -> void:
 	monster.reset_physics_interpolation()
 	enemy_combat.invulnerability = 0.0
 	enemy_combat.stats.armour = 5.0
-	var key := InputEventKey.new()
-	key.physical_keycode = KEY_SPACE
-	key.pressed = true
-	root.push_input(key, true)
-	player.call("_physics_process", 0.016)
-	check(enemy_combat.stats.current_health == 65.0, "Space input must deliver armour-reduced damage.")
-	key.pressed = false
-	root.push_input(key, true)
+	check(player_combat.attack(enemy_combat), "Melee attack against armour must succeed.")
+	check(enemy_combat.stats.current_health == 65.0, "Armour must reduce melee damage.")
 	var data := DamageData.new()
 	data.amount = 1000.0
 	data.source = player

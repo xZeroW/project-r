@@ -1,7 +1,5 @@
 [gd_scene format=3 uid="uid://c8lrimb27se4f"]
 
-[ext_resource type="Script" path="res://scripts/components/melee_combat.gd" id="combat"]
-
 [ext_resource type="Script" uid="uid://bul5s1q5flevc" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" uid="uid://cjbeun4wjnh7j" path="res://scripts/components/player_input.gd" id="2"]
 [ext_resource type="Script" uid="uid://c3anopeq2qeyk" path="res://scripts/components/character_movement.gd" id="3"]
@@ -12,6 +10,8 @@
 [ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="8"]
 [ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="9"]
 [ext_resource type="Script" uid="uid://bd7djw4xpmss4" path="res://scripts/components/health_bar_ui.gd" id="10_health_bar_ui"]
+[ext_resource type="Script" uid="uid://k24y2tiungoi" path="res://scripts/components/melee_combat.gd" id="combat"]
+[ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -58,11 +58,15 @@ mesh = SubResource("ContactShadowMesh")
 unique_name_in_owner = true
 script = ExtResource("2")
 
-[node name="Combat" type="Node" parent="."]
+[node name="Combat" type="Node" parent="." unique_id=145683198]
 unique_name_in_owner = true
 script = ExtResource("combat")
 stats = SubResource("PlayerStats")
 visual_path = NodePath("../DirectionalSprite")
+
+[node name="Targeting" type="Node" parent="." unique_id=506893315]
+unique_name_in_owner = true
+script = ExtResource("targeting")
 
 [node name="CharacterMovement" type="Node" parent="." unique_id=897067084]
 unique_name_in_owner = true

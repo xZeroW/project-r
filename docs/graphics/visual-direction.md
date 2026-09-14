@@ -14,6 +14,17 @@ updated: 2026-09-12
 
 # Graphics — Visual Direction
 
+## Confirmed — Combined references
+
+The owner clarified that the game mixes **Ragnarok Online (2002)** and **Tree of Savior**.
+The existing 2D-character/3D-map foundation remains; Tree of Savior also informs the
+requested targeting/click-to-attack direction. Specific mechanics are recorded as
+project decisions rather than assumed from either reference game.
+
+| Date | Status | Decision | Source |
+| --- | --- | --- | --- |
+| 2026-09-14 | Confirmed | Combine Ragnarok Online (2002) and Tree of Savior as project references. | Owner's targeting brief. |
+
 ## Confirmed — Visual foundation
 
 The game will use **2D characters in 3D maps**, with **Ragnarok Online (2002)** as its visual reference.

@@ -4,6 +4,7 @@ extends Node
 
 signal destination_changed(position: Vector3)
 signal destination_cleared
+signal enemy_selected(enemy: MeleeCombat)
 
 @export_range(0.01, 0.5, 0.01) var arrival_distance: float = 0.08
 @export_range(0.1, 5.0, 0.1) var stuck_timeout: float = 1.0
@@ -63,6 +64,12 @@ func _resolve_click(body: CharacterBody3D) -> void:
 	var query := PhysicsRayQueryParameters3D.create(_ray_origin, _ray_end, ground_pick_mask, [body.get_rid()])
 	var hit := body.get_world_3d().direct_space_state.intersect_ray(query)
 	var collider := hit.get("collider") as Node
+	if collider != null and collider.is_in_group(&"monsters"):
+		var enemy := collider.get_node_or_null("Combat") as MeleeCombat
+		if enemy != null and enemy.stats.current_health > 0.0:
+			cancel()
+			enemy_selected.emit(enemy)
+		return
 	if collider == null or not collider.is_in_group(&"walkable_ground"):
 		return
 	var clicked_position: Vector3 = hit["position"]

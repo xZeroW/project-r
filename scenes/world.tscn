@@ -62,5 +62,6 @@ offset_top = 20.0
 text = "MAP PROTOTYPE
 Left click — move to destination · WASD — move / cancel route
 Q / E — rotate camera · Mouse wheel — zoom
-Space — melee attack · R — restart encounter"
+Click monster — approach / auto-attack · WASD / ground click — cancel
+R — restart encounter"
 label_settings = SubResource("HelpStyle")
