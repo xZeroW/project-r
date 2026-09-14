@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://cxutb7e8p1vuc"]
+
+[ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="1_uwnm8"]
+[ext_resource type="Script" path="res://scripts/monster.gd" id="2_monster"]
+
+[sub_resource type="StandardMaterial3D" id="BlueMaterial"]
+shading_mode = 0
+albedo_color = Color(0.1, 0.35, 1, 1)
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="SquareMesh"]
+material = SubResource("BlueMaterial")
+size = Vector2(1.5, 1.5)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1cbnp"]
+radius = 0.5620117
+height = 1.8496094
+
+[sub_resource type="ShaderMaterial" id="ContactShadowMaterial"]
+render_priority = -1
+shader = ExtResource("1_uwnm8")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_c47ug"]
+material = SubResource("ContactShadowMaterial")
+size = Vector2(1, 1)
+
+[node name="Monster" type="CharacterBody3D" unique_id=1245411007 groups=["monsters"]]
+script = ExtResource("2_monster")
+
+[node name="Visual" type="MeshInstance3D" parent="." unique_id=24812990]
+transform = Transform3D(0.95, 0, 0, 0, 0.95, 0, 0, 0, 0.95, 0, 0.75, 0)
+cast_shadow = 0
+mesh = SubResource("SquareMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1985358451]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68384284, 0)
+shape = SubResource("CapsuleShape3D_1cbnp")
+
+[node name="ContactShadow" type="MeshInstance3D" parent="CollisionShape3D" unique_id=1303855422]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07852481, -0.66880465, 0)
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_c47ug")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1729526201]
+unique_name_in_owner = true
+path_desired_distance = 0.5
+target_desired_distance = 1.5
