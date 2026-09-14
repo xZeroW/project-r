@@ -7,6 +7,7 @@ status: confirmed
 ## Current implementation
 
 - **Left-click a monster** to select it, approach on the navmesh, and auto-attack until it dies. A gold UI label identifies the current target and health. Clicking another living monster switches targets.
+- The selected monster has a soft orange-gold ring around its feet, based on the owner's Tree of Savior reference image. The ring has a transparent center, warm solid band, and feathered edges. It is a depth-tested ground PlaneMesh using `target_ring.gdshader`, positioned just above the interpolated contact shadow. Render priorities put the shadow (-1) first, the ring (0) next, and the sprite (1) in front. It clears with selection; the target/health label remains screen-space UI above the monster.
 - WASD or an accepted ground click cancels pursuit and auto-attacking. Death, a removed target, missing camera, unreachable path, or one second of blocked pursuit clears selection.
 - `ClickMovement` uses its click-time camera ray in the next physics tick to distinguish monsters from ground. `Targeting` refreshes a pursuit path at most five times per second and calls the shared melee component only within range and clear line of sight. Cooldowns do not clear selection. Moving targets are followed again when they leave reach.
 
@@ -41,6 +42,9 @@ and popup cleanup alongside existing damage checks.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-14 | Confirmed | Render the ring in the 3D ground plane behind the sprite, like the contact shadow. | Owner's ring occlusion correction. |
+| 2026-09-14 | Confirmed | Replace corner brackets/arrow with a soft orange-gold ground ring. | Owner's Tree of Savior screenshot reference. |
+| 2026-09-14 | Confirmed | Add corner brackets and an arrow to clearly identify the selected attack target. | Owner's visual target-indication request. |
 | 2026-09-14 | Confirmed | Show floating UI damage numbers for actual health lost on player and monsters. | Owner's damage-number request; color/timing are prototype defaults. |
 | 2026-09-14 | Confirmed | Remove the Space nearby-attack shortcut; use click-to-attack. | Owner's request after testing targeting. |
 | 2026-09-14 | Confirmed | Clicking selects, approaches, and repeats attacks; WASD/ground clicks cancel. | Owner's chosen approach-and-auto-attack behavior. |

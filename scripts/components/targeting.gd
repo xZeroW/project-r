@@ -9,6 +9,7 @@ var _refresh: float = 0.0
 var _stuck: float = 0.0
 var _pursuing: bool = false
 var _label: Label
+var _indicator: TargetIndicator
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -22,6 +23,10 @@ func _ready() -> void:
 	_label.add_theme_constant_override("shadow_offset_y", 1)
 	_label.hide()
 	layer.add_child(_label)
+	_indicator = TargetIndicator.new()
+	_indicator.name = "TargetIndicator"
+	_indicator.hide()
+	add_child(_indicator)
 	# Project after the follow camera has updated for this render frame.
 	process_priority = 100
 
@@ -39,6 +44,8 @@ func cancel() -> void:
 	_pursuing = false
 	if is_instance_valid(_label):
 		_label.hide()
+	if is_instance_valid(_indicator):
+		_indicator.hide()
 
 func has_target() -> bool:
 	return is_instance_valid(target) and target.damage_enabled and target.stats.current_health > 0.0
@@ -50,7 +57,13 @@ func _process(_delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	var position := target.body.get_global_transform_interpolated().origin + Vector3.UP * 1.4
 	_label.visible = camera != null and not camera.is_position_behind(position)
+	_indicator.visible = _label.visible
 	if _label.visible:
+		var ground_position := target.body.get_global_transform_interpolated().origin
+		var shadow := target.body.get_node_or_null("CollisionShape3D/ContactShadow") as Node3D
+		if shadow != null:
+			ground_position = shadow.get_global_transform_interpolated().origin
+		_indicator.place_at(ground_position)
 		_label.text = "TARGET  %d / %d" % [target.stats.current_health, target.stats.max_health]
 		_label.position = camera.unproject_position(position) - Vector2(_label.size.x * 0.5, 0)
 
