@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://chj4acytu1x6l" path="res://scripts/monster.gd" id="2_monster"]
 [ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="3_stats"]
 [ext_resource type="Texture2D" uid="uid://mec1vfnegfvm" path="res://assets/enemies/poring/poring.png" id="4_poring"]
+[ext_resource type="Script" uid="uid://bd7djw4xpmss4" path="res://scripts/components/health_bar_ui.gd" id="5_health_bar_ui"]
 
 [sub_resource type="Resource" id="MonsterStats"]
 resource_local_to_scene = true
@@ -26,7 +27,7 @@ animations = [{
 }]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1cbnp"]
-radius = 0.54418945
+radius = 0.515625
 height = 1.0883789
 
 [sub_resource type="ShaderMaterial" id="ContactShadowMaterial"]
@@ -65,3 +66,35 @@ mesh = SubResource("PlaneMesh_c47ug")
 unique_name_in_owner = true
 path_desired_distance = 0.5
 target_desired_distance = 1.5
+
+[node name="HealthBar" type="CanvasLayer" parent="." unique_id=1729526202]
+layer = 10
+script = ExtResource("5_health_bar_ui")
+stats = SubResource("MonsterStats")
+target_path = NodePath("..")
+world_offset = Vector3(0, -0.3, 0)
+
+[node name="Bar" type="Control" parent="HealthBar" unique_id=1729526203]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 8.0
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="HealthBar/Bar" unique_id=1729526204]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.03, 0.03, 0.03, 1)
+
+[node name="Fill" type="ColorRect" parent="HealthBar/Bar" unique_id=1729526205]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 62.0
+offset_bottom = 6.0
+mouse_filter = 2
+color = Color(0.1, 0.85, 0.2, 1)

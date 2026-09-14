@@ -12,6 +12,7 @@ health or mana changes never leak to another character.
 
 | Stat | Player | Monster |
 | --- | ---: | ---: |
+| Maximum health | 100 | 100 |
 | Health | 100 | 100 |
 | Mana | 100 | 100 |
 | Movement speed | 4.0 | 2.5 |

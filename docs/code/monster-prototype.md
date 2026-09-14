@@ -23,6 +23,10 @@ for future animation and damage. This placeholder has no animations or damage.
 The poring walking, attack, hurt, and dying regions remain available in the source sheet
 but are not yet mapped to gameplay states.
 
+Both the player and monster also show a screen-space UI health bar anchored to the
+character's projected world position. Its green fill follows the owning character's
+`CharacterStats.health` value relative to its `max_health`.
+
 ## Decision history
 
 | Date | Status | Decision | Source |

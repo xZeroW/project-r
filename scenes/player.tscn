@@ -8,15 +8,16 @@
 [ext_resource type="Script" uid="uid://c3w6n70ge3od8" path="res://scripts/components/click_movement.gd" id="6"]
 [ext_resource type="Script" uid="uid://cdm0kamlkl2s6" path="res://scripts/components/destination_marker.gd" id="7"]
 [ext_resource type="Shader" uid="uid://5iumg34f6bkn" path="res://scripts/contact_shadow.gdshader" id="8"]
-[ext_resource type="Script" path="res://scripts/character_stats.gd" id="9"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ur7pv"]
-radius = 0.5620117
-height = 1.8496094
+[ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="9"]
+[ext_resource type="Script" uid="uid://bd7djw4xpmss4" path="res://scripts/components/health_bar_ui.gd" id="10_health_bar_ui"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
 script = ExtResource("9")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ur7pv"]
+radius = 0.5620117
+height = 1.8496094
 
 [sub_resource type="ShaderMaterial" id="ContactShadowMaterial"]
 render_priority = -1
@@ -85,3 +86,35 @@ sprite_frames = ExtResource("5")
 animation = &"idle_south"
 autoplay = "idle_south"
 script = ExtResource("4")
+
+[node name="HealthBar" type="CanvasLayer" parent="." unique_id=385136428]
+layer = 10
+script = ExtResource("10_health_bar_ui")
+stats = SubResource("PlayerStats")
+target_path = NodePath("..")
+world_offset = Vector3(0, -1.2, 0)
+
+[node name="Bar" type="Control" parent="HealthBar" unique_id=385136429]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 8.0
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="HealthBar/Bar" unique_id=385136430]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.03, 0.03, 0.03, 1)
+
+[node name="Fill" type="ColorRect" parent="HealthBar/Bar" unique_id=385136431]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 62.0
+offset_bottom = 6.0
+mouse_filter = 2
+color = Color(0.1, 0.85, 0.2, 1)

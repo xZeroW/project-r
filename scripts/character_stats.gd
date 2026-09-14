@@ -2,7 +2,8 @@ class_name CharacterStats
 extends Resource
 ## Mutable gameplay stats owned independently by each character instance.
 
-@export var health: float = 100.0
+@export var max_health: float = 100.0
+@export var current_health: float = 100.0
 @export var mana: float = 100.0
 @export var movement_speed: float = 4.0
 @export var attack_speed: float = 1.0
