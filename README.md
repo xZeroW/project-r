@@ -29,6 +29,7 @@ godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
 godot --headless --path . --script res://tests/combat_test.gd
 godot --headless --path . --script res://tests/targeting_test.gd
+godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
 The integration checks cover physical WASD/Q/E bindings, all eight directions, consistent movement speed, retained idle facing, floor contact, obstacle/boundary collisions, camera-free physics with movement recovery, camera orbit/reversal, movement/facing after rotation, and persistent map-facing direction through full camera orbits. Mouse-wheel checks cover zoom direction, limits, reversal, UI input blocking, and inactive cameras. Follow checks cover render-frame centering during movement, reversal and stopping, independence from player rotation, and missing/restored targets.

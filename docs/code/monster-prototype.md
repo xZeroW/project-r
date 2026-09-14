@@ -4,6 +4,22 @@ status: confirmed
 
 # Code — Basic Monster Prototype
 
+## Current implementation — Aggression
+
+The monster Inspector exposes `aggressive` (default **true**) and `aggro_radius`
+(default **6.0** world units). Aggressive monsters chase and attack their assigned
+living player only while the player is inside that horizontal ground-plane radius.
+Outside the radius, or with aggression disabled, the monster stops and cancels any
+pending attack. Re-entry starts a fresh engagement. A zero radius disables engagement.
+Non-aggressive monsters remain idle, including when damaged; retaliation is not enabled.
+The monster stays where it stopped rather than returning to its spawn.
+
+Damage is implemented by the shared melee component; see [Combat prototype](combat-prototype.md).
+The simulated-attack description below records the earlier prototype phase.
+
+`tests/aggro_test.gd` verifies passive behavior, radius boundaries, disabling aggression
+during windup, leaving the radius, re-entry, and zero radius.
+
 ## Confirmed — Poring sprite presentation
 
 `scenes/monster.tscn` is a reusable monster scene with a `CharacterBody3D` root in the
@@ -31,6 +47,8 @@ character's projected world position. Its green fill follows the owning characte
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-14 | Confirmed | Add configurable aggression and aggro radius; aggressive monsters engage players entering the radius. | Owner's aggro request. |
+| 2026-09-14 | Proposed | Default radius 6; disengage outside radius, and passive monsters do not retaliate. | Initial implementation behavior for playtesting. |
 | 2026-09-13 | Confirmed | Add a basic monster represented by a blue square without animations. | Project owner's brief. |
 | 2026-09-13 | Confirmed | Replace the placeholder with the imported poring sheet's eight-frame standing animation. | Project owner's imported enemy asset. |
 | 2026-09-13 | Confirmed | Enable the existing capsule collider using a physics body. | Project owner's collision request. |

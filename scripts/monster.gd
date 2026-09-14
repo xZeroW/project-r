@@ -6,6 +6,8 @@ signal attack_finished
 
 @export var target: CharacterBody3D
 @export var stats: CharacterStats
+@export var aggressive: bool = true
+@export_range(0.0, 50.0, 0.1, "or_greater") var aggro_radius: float = 6.0
 @export var attack_range: float = 1.5
 @export var attack_duration: float = 2.0
 
@@ -28,12 +30,14 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if stats.current_health <= 0.0 or not is_instance_valid(target):
-		velocity = Vector3.ZERO
+		_stop_engagement()
 		return
 	var target_combat := target.get_node_or_null("Combat") as MeleeCombat
 	if target_combat == null or target_combat.stats.current_health <= 0.0:
-		_is_attacking = false
-		velocity = Vector3.ZERO
+		_stop_engagement()
+		return
+	if not aggressive or aggro_radius <= 0.0 or _horizontal_distance_to_target() > aggro_radius:
+		_stop_engagement()
 		return
 	if not _navigation_ready:
 		velocity = Vector3.ZERO
@@ -71,6 +75,13 @@ func _set_target_when_navigation_is_ready() -> void:
 	await get_tree().physics_frame
 	_navigation_agent.target_position = target.global_position
 	_navigation_ready = true
+
+func _stop_engagement() -> void:
+	velocity = Vector3.ZERO
+	_is_attacking = false
+	_attack_time_remaining = 0.0
+	# Re-entry must immediately refresh the route rather than follow a stale one.
+	_retarget_time = 0.0
 
 func _horizontal_distance_to_target() -> float:
 	var offset := target.global_position - global_position
