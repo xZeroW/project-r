@@ -88,6 +88,6 @@ text = "MAP PROTOTYPE
 Left click — move to destination · WASD — move / cancel route
 Q / E — rotate camera · Mouse wheel — zoom
 Click monster — approach / auto-attack · WASD / ground click — cancel
-R — restart encounter
+C — status window (spend stat points) · R — restart encounter
 Death — respawn at spawn · 5% BASE EXP lost"
 label_settings = SubResource("HelpStyle")

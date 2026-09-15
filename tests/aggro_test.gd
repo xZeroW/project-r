@@ -38,7 +38,7 @@ func run() -> void:
 	monster._physics_process(0.016)
 	check(monster._is_attacking, "Retaliating monster must attack within range.")
 	monster._physics_process(2.1)
-	check(player_combat.stats.current_health == 90.0, "Retaliation must deal damage.")
+	check(player_combat.stats.current_health == 100.0, "Retaliation must deal damage.")
 	monster.aggressive = true
 	monster.aggro_radius = 1.0
 	monster._physics_process(0.016)

@@ -22,6 +22,10 @@ health or mana changes never leak to another character.
 | Evasion | 0 | 0 |
 | Block | 0 | 0 |
 
+Player values are the derived results of base stats at 1. `StatusPoints`
+recomputes them into the shared stats whenever a stat point is spent; DEX/LUK
+remain data-only. See [Status point allocation](status-points.md).
+
 Player and monster movement read `movement_speed` from their assigned stats.
 Combat reads `attack_damage`, `attack_speed`, and flat `armour`, and reduces
 `current_health`. Health UI displays `current_health / max_health`.
@@ -36,5 +40,6 @@ detection, damage, and the displayed bar agree (the player scene shares a single
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-15 | Confirmed | Stat allocation recomputes player derived stats (attack damage, attack speed, evasion, max health/mana) into the shared stat resource. | Owner's status-points request. |
 | 2026-09-15 | Confirmed | One stat resource instance is shared by all of a character's components so death, combat, and UI agree. | Bug found while implementing player death gating. |
 | 2026-09-13 | Confirmed | Player and monster share the same initial stat set through per-instance resources. | Project owner's brief. |

@@ -22,11 +22,13 @@ func _unhandled_input(event: InputEvent) -> void:
 @onready var visual_component: DirectionalSprite = %DirectionalSprite
 @onready var click_movement: ClickMovement = %ClickMovement
 @onready var destination_marker: DestinationMarker = %DestinationMarker
+@onready var status_points: StatusPoints = %StatusPoints
 
 func _ready() -> void:
 	assert(stats != null, "Player requires character stats.")
 	combat.defeated_enemy.connect(_on_defeated_enemy)
 	experience.leveled_up.connect(_on_leveled_up)
+	experience.leveled_up.connect(status_points.grant_level_up_points.unbind(1))
 	movement_component.speed = stats.movement_speed
 	input_component.destination_requested.connect(_on_destination_requested)
 	click_movement.destination_changed.connect(destination_marker.show_destination)
