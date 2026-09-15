@@ -16,7 +16,11 @@ status: confirmed
 
 ## Scope and baseline choices
 
-This pass implements Base leveling. RO's separate Job EXP/class progression, stat-point allocation, automatic stat growth, level-up healing, death penalties, party sharing, and save persistence are not implemented. Combat stats continue to use the existing `CharacterStats` values. These are future design decisions rather than implied RO rules.
+This pass implements Base leveling. RO's separate Job EXP/class progression, stat-point allocation, automatic stat growth, party sharing, and save persistence are not implemented. Combat stats continue to use the existing `CharacterStats` values. These are future design decisions rather than implied RO rules.
+
+Leveling up restores the player to full health and full mana. Dying charges a 5%
+Base EXP penalty from the current level's requirement without de-leveling; see
+[Player death and respawn](player-respawn.md).
 
 Classic versus Renewal was unspecified in the request; classic normal progression is the prototype default. The Poring reference also lists 1 Job EXP, which is not awarded because there is no Job progression yet.
 
@@ -33,6 +37,7 @@ Classic versus Renewal was unspecified in the request; classic normal progressio
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-15 | Confirmed | Leveling up restores the player to full health and mana. | Owner's level-up restore request. |
 | 2026-09-14 | Confirmed | Add leveling based on Ragnarok EXP requirements and Poring rewards. | Owner's request. |
 | 2026-09-14 | Proposed | Use classic normal Base Level 1–99 and 2 EXP per Poring at 1×; defer Job progression and stat benefits. | Implementation baseline; RO version and class rules unspecified. |
 | 2026-09-14 | Proposed | Preserve overflow, credit lethal hits, and reset progression with encounter reload. | Prototype defaults consistent with current combat/session lifecycle. |

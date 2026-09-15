@@ -27,8 +27,14 @@ Combat reads `attack_damage`, `attack_speed`, and flat `armour`, and reduces
 `current_health`. Health UI displays `current_health / max_health`.
 Mana, evasion, and block remain data-only. See [Combat prototype](combat-prototype.md).
 
+Within one character, every component that reads a stat — root orchestrator,
+`MeleeCombat`, `HealthBarUI` — references the same per-instance resource so death
+detection, damage, and the displayed bar agree (the player scene shares a single
+`PlayerStats` sub-resource; see [Player death and respawn](player-respawn.md)).
+
 ## Decision history
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-15 | Confirmed | One stat resource instance is shared by all of a character's components so death, combat, and UI agree. | Bug found while implementing player death gating. |
 | 2026-09-13 | Confirmed | Player and monster share the same initial stat set through per-instance resources. | Project owner's brief. |

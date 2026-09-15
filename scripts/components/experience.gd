@@ -3,6 +3,7 @@ extends Node
 ## Owns per-character, session-local Base Level and EXP.
 
 signal experience_gained(amount: int)
+signal experience_lost(amount: int)
 signal leveled_up(level: int)
 signal progression_changed
 
@@ -37,4 +38,15 @@ func add_experience(amount: int) -> void:
 		current_experience = 0
 		level += 1
 		leveled_up.emit(level)
+	progression_changed.emit()
+
+## Loses up to [amount] current-level EXP without ever de-leveling.
+func lose_experience(amount: int) -> void:
+	if amount <= 0 or is_max_level():
+		return
+	var applied := mini(amount, current_experience)
+	if applied <= 0:
+		return
+	current_experience -= applied
+	experience_lost.emit(applied)
 	progression_changed.emit()

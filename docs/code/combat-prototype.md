@@ -15,7 +15,7 @@ status: confirmed
 - Player damage defaults to 20, with a `1 / attack_speed` second cooldown (one second initially).
 - Poring damage defaults to 10. Its existing movement-locked windup lasts `attack_duration / attack_speed` (two seconds initially). Range (1.5 units), target life, and obstruction are checked again when it finishes; leaving range dodges the attack.
 - Both entities compose `MeleeCombat`, sharing their own local `CharacterStats` resource with the UI. `DamageData` carries damage and source. Damage subtracts flat armour, floors at zero, and clamps `current_health` to zero. A 0.15-second invulnerability window prevents rapid duplicate hits.
-- Successful damage flashes the sprite red. Defeated entities turn dark, stop moving/attacking, and disable their collider. The monster stops attacking a defeated player.
+- Successful damage flashes the sprite red. Defeated entities turn dark, stop moving/attacking, and disable their collider. The monster stops attacking a defeated player. A defeated player respawns at their spawn point after a short delay, paying 5% of the current level's Base EXP (never de-leveling); see [Player death and respawn](player-respawn.md).
 - Monsters now fade out on death and respawn at full health; passive monsters retaliate on hits and engaged monsters use a separate spawn leash. See [Monster lifecycle](monster-prototype.md).
 - **R** reloads the encounter, restoring the scene's initial health and positions.
 - Mana, evasion, and block remain data-only. Attack/death sprite clips are not part of this pass.
@@ -42,6 +42,7 @@ and popup cleanup alongside existing damage checks.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-15 | Confirmed | Defeated players respawn at their spawn point with a 5% Base EXP penalty and no de-level. | Owner's player death/respawn request. |
 | 2026-09-14 | Confirmed | Render the ring in the 3D ground plane behind the sprite, like the contact shadow. | Owner's ring occlusion correction. |
 | 2026-09-14 | Confirmed | Replace corner brackets/arrow with a soft orange-gold ground ring. | Owner's Tree of Savior screenshot reference. |
 | 2026-09-14 | Confirmed | Add corner brackets and an arrow to clearly identify the selected attack target. | Owner's visual target-indication request. |

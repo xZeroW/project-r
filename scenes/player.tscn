@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://bd7djw4xpmss4" path="res://scripts/components/health_bar_ui.gd" id="10_health_bar_ui"]
 [ext_resource type="Script" uid="uid://k24y2tiungoi" path="res://scripts/components/melee_combat.gd" id="combat"]
 [ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
+[ext_resource type="Script" path="res://scripts/components/death_respawn.gd" id="death_respawn"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -58,6 +59,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0700531, 0)
 shape = SubResource("CapsuleShape3D_ur7pv")
 
 [node name="ContactShadow" type="MeshInstance3D" parent="CollisionShape3D" unique_id=334623506]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07852481, -0.66880465, 0)
 cast_shadow = 0
 mesh = SubResource("ContactShadowMesh")
@@ -85,6 +87,10 @@ curve = SubResource("BaseExperienceCurve")
 layer = 10
 script = ExtResource("experience_ui")
 experience = NodePath("../Experience")
+
+[node name="DeathRespawn" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("death_respawn")
 
 [node name="DamageNumbers" type="CanvasLayer" parent="."]
 script = ExtResource("damage_numbers")
@@ -123,6 +129,7 @@ autoplay = "idle_south"
 script = ExtResource("4")
 
 [node name="HealthBar" type="CanvasLayer" parent="." unique_id=385136428]
+unique_name_in_owner = true
 layer = 10
 script = ExtResource("10_health_bar_ui")
 stats = SubResource("PlayerStats")

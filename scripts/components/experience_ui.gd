@@ -37,6 +37,7 @@ func _ready() -> void:
 	add_child(_notice_timer)
 	experience.progression_changed.connect(_refresh)
 	experience.experience_gained.connect(_on_experience_gained)
+	experience.experience_lost.connect(_on_experience_lost)
 	experience.leveled_up.connect(_on_leveled_up)
 	_refresh()
 
@@ -52,13 +53,20 @@ func _add_label(parent: Control, color: Color) -> Label:
 func _refresh() -> void:
 	_level_label.text = "Base Lv. %d" % experience.level
 	_bar.max_value = maxi(1, experience.get_required_experience())
-	_bar.value = _bar.max_value if experience.is_max_level() else experience.current_experience
+	_bar.value = _bar.max_value if experience.is_max_level() else float(experience.current_experience)
 	_exp_label.text = "MAX LEVEL" if experience.is_max_level() else "Base EXP  %d / %d" % [experience.current_experience, experience.get_required_experience()]
 
 func _on_experience_gained(amount: int) -> void:
 	_notice.text = "+%d Base EXP" % amount
+	_notice.add_theme_color_override("font_color", Color(1, 0.85, 0.35))
+	_notice_timer.start()
+
+func _on_experience_lost(amount: int) -> void:
+	_notice.text = "-%d Base EXP" % amount
+	_notice.add_theme_color_override("font_color", Color(1, 0.45, 0.4))
 	_notice_timer.start()
 
 func _on_leveled_up(level: int) -> void:
 	_notice.text = "LEVEL UP!  Base Lv. %d" % level
+	_notice.add_theme_color_override("font_color", Color(1, 0.85, 0.35))
 	_notice_timer.start()
