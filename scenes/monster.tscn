@@ -78,6 +78,7 @@ script = ExtResource("combat")
 stats = SubResource("MonsterStats")
 reach = 1.5
 visual_path = NodePath("../Visual")
+base_experience_reward = 2
 
 [node name="DamageNumbers" type="CanvasLayer" parent="."]
 script = ExtResource("damage_numbers")

@@ -4,10 +4,12 @@ extends Node
 
 signal damaged(data: DamageData)
 signal died
+signal defeated_enemy(enemy: MeleeCombat)
 
 @export var stats: CharacterStats
 @export var reach: float = 1.8
 @export var visual_path: NodePath
+@export_range(0, 1000000000, 1) var base_experience_reward: int = 0
 
 @onready var body: CharacterBody3D = get_parent() as CharacterBody3D
 @onready var visual: AnimatedSprite3D = get_node(visual_path) as AnimatedSprite3D
@@ -60,4 +62,9 @@ func take_damage(data: DamageData) -> void:
 		(body.get_node("CollisionShape3D") as CollisionShape3D).set_deferred("disabled", true)
 		visual.stop()
 		visual.modulate = Color(0.35, 0.35, 0.35)
+		# Credit the lethal hit only; rejected hits and already-dead bodies never reach here.
+		if is_instance_valid(resolved.source) and resolved.source != body:
+			var attacker := resolved.source.get_node_or_null("Combat") as MeleeCombat
+			if attacker != null:
+				attacker.defeated_enemy.emit(self)
 		died.emit()

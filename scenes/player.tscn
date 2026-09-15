@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://c8lrimb27se4f"]
 
 [ext_resource type="Script" path="res://scripts/components/damage_numbers.gd" id="damage_numbers"]
+[ext_resource type="Script" path="res://scripts/experience_curve.gd" id="experience_curve"]
+[ext_resource type="Script" path="res://scripts/components/experience.gd" id="experience"]
+[ext_resource type="Script" path="res://scripts/components/experience_ui.gd" id="experience_ui"]
 
 [ext_resource type="Script" uid="uid://bul5s1q5flevc" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" uid="uid://cjbeun4wjnh7j" path="res://scripts/components/player_input.gd" id="2"]
@@ -18,6 +21,9 @@
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
 script = ExtResource("9")
+
+[sub_resource type="Resource" id="BaseExperienceCurve"]
+script = ExtResource("experience_curve")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ur7pv"]
 radius = 0.5620117
@@ -69,6 +75,16 @@ visual_path = NodePath("../DirectionalSprite")
 [node name="Targeting" type="Node" parent="." unique_id=506893315]
 unique_name_in_owner = true
 script = ExtResource("targeting")
+
+[node name="Experience" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("experience")
+curve = SubResource("BaseExperienceCurve")
+
+[node name="ExperienceUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("experience")]
+layer = 10
+script = ExtResource("experience_ui")
+experience = NodePath("../Experience")
 
 [node name="DamageNumbers" type="CanvasLayer" parent="."]
 script = ExtResource("damage_numbers")

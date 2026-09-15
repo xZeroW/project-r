@@ -7,6 +7,7 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @export var stats: CharacterStats
 @onready var combat: MeleeCombat = %Combat
 @onready var targeting: Targeting = %Targeting
+@onready var experience: Experience = %Experience
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
@@ -24,12 +25,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _ready() -> void:
 	assert(stats != null, "Player requires character stats.")
+	combat.defeated_enemy.connect(_on_defeated_enemy)
 	movement_component.speed = stats.movement_speed
 	input_component.destination_requested.connect(_on_destination_requested)
 	click_movement.destination_changed.connect(destination_marker.show_destination)
 	click_movement.destination_cleared.connect(destination_marker.clear_destination)
 	click_movement.enemy_selected.connect(targeting.select)
 	click_movement.destination_changed.connect(func(_position: Vector3) -> void: targeting.cancel())
+
+func _on_defeated_enemy(enemy: MeleeCombat) -> void:
+	experience.add_experience(enemy.base_experience_reward)
 
 func _on_destination_requested(screen_position: Vector2) -> void:
 	if stats.current_health <= 0.0:
