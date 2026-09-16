@@ -53,18 +53,12 @@ func attack(other: MeleeCombat) -> bool:
 	var data := DamageData.new()
 	data.amount = stats.attack_damage
 	data.source = body
-	other.take_damage(data)
+	other.take_damage(data, self)
 	return true
 
-func _attacker_from(source: Node3D) -> MeleeCombat:
-	if is_instance_valid(source):
-		return source.get_node_or_null("Combat") as MeleeCombat
-	return null
-
-func take_damage(data: DamageData) -> void:
+func take_damage(data: DamageData, attacker: MeleeCombat) -> void:
 	if not damage_enabled or stats.current_health <= 0.0 or invulnerability > 0.0 or data.amount <= 0.0:
 		return
-	var attacker := _attacker_from(data.source)
 	var result := resolver.resolve_incoming(attacker.stats if attacker != null else null, stats)
 	match result.kind:
 		CombatResolver.ResultKind.MISS:

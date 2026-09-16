@@ -30,9 +30,9 @@ formulas (simple prototype defaults):
 | block | still 0 until shields exist |
 
 - `MeleeCombat.take_damage` resolves through an injectable `CombatResolver` with
-  a single RO-contested roll (`hit% = clamp(80 + acc + level modifier − evasion,
+  a single RO-contested roll (`hit% = clamp(95 + acc + level modifier − evasion,
   5%, 95%)`): DEX and AGI both give 1 point and cancel 1-for-1, so equal
-  investment sits at the classic 80% base. A failed roll reads `MISS` or
+  investment sits at the classic 95% base. A failed roll reads `MISS` or
   `EVADED` (when evasion outscores accuracy); landed hits roll block (halving
   damage) then crit. Tests pin `dice` for each stage.
 - `damage_numbers.gd` shows Miss/Evade/Block popups and colors crits.
@@ -79,8 +79,9 @@ earlier systems is in scope when a later phase requires it.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-16 | Confirmed | RAISED the RO-contested hit-roll base from 80 to 95 (`hit% = clamp(95 + acc + level mod − evasion, 5, 95)`). Equal DEX/AGI investment now cancels to the 95% base (previously 80%); level curve unchanged (95 / 94.5 / 94 / 92% at par acc). | Owner's accuracy-base request. |
 | 2026-09-16 | Confirmed | Combat resolves in a strict pipeline: stage-one accuracy (acc + level modifier, no evasion) → plain MISS on failure; then target evasion → block → crit. A blocked hit halves damage instead of negating it; MISS/EVADE/BLOCK popups. | Owner's combat-order brief. |
-| 2026-09-16 | Confirmed | Monsters get a static definition level (no EXP gain) that shifts hit chance via a level curve: +0.5%/level below, −0.5%/level for the first two levels above, then −2%/level beyond (80 / 79.5 / 79 / 77% at par acc). | Owner's hit-chance brief. |
+| 2026-09-16 | Confirmed | Monsters get a static definition level (no EXP gain) that shifts hit chance via a level curve: +0.5%/level below, −0.5%/level for the first two levels above, then −2%/level beyond (95 / 94.5 / 94 / 92% at par acc). | Owner's hit-chance brief. |
 | 2026-09-16 | Confirmed | Fresh players start with all base stats at 0, zero unspent points, and the derived baseline loadout (20 ATK / 1.0 ASPD / 100 HP); levels grant +5 points. | Owner's correction to the starting stats. |
 | 2026-09-16 | Confirmed | Phase D: data-driven `MonsterDefinition` resources drive per-instance stats/EXP/behavior/tint; `combat.stats` unifies with the root; tints live on `base_modulate`. | Phase D implementation. |
 | 2026-09-16 | Confirmed | Phase A formulas: DEX `90 + 2·DEX` accuracy (5–95% clamp), AGI evasion subtracts, LUK `0.3·LUK` crit at ×1.5 on landed hits only, block stays 0. Resolver dice are injectable for tests. | Owner's stat-calculation choices. |

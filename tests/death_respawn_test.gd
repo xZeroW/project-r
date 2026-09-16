@@ -47,7 +47,7 @@ func run() -> void:
 	var data := DamageData.new()
 	data.source = monster
 	data.amount = 1000.0
-	combat.take_damage(data)
+	combat.take_damage(data, monster.combat)
 	await process_frame
 	check(player.stats.current_health == 0.0, "Lethal damage must zero the shared player stats.")
 	check(combat.stats.current_health == 0.0 and health_bar.stats.current_health == 0.0, "Death must be visible to combat and health bar.")
@@ -68,7 +68,7 @@ func run() -> void:
 	check(combat.visual.modulate == Color.WHITE, "Respawn must restore the sprite color.")
 	check(experience.level == 1 and experience.current_experience == 6, "Respawn must not grant or remove extra EXP.")
 	experience.current_experience = 0
-	combat.take_damage(data)
+	combat.take_damage(data, monster.combat)
 	await process_frame
 	check(experience.current_experience == 0 and experience.level == 1, "A zero-EXP death at level 1 must cost nothing and never de-level.")
 	death_respawn._physics_process(death_respawn.respawn_delay + 0.1)

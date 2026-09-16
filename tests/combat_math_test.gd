@@ -36,10 +36,10 @@ func _test_resolver() -> void:
 	var result := resolver.resolve_incoming(attacker, defender)
 	check(result.kind == CombatResolver.ResultKind.HIT, "A roll below the base chance must land a hit.")
 	check(not result.is_crit, "Attacker with zero crit must never crit.")
-	check(absf(result.hit_chance - 0.80) < 0.001, "Zero accuracy and evasion must yield the RO 80% base chance.")
+	check(absf(result.hit_chance - 0.95) < 0.001, "Zero accuracy and evasion must yield the RO 95% base chance.")
 	attacker.acc = 25.0
 	defender.evasion = 25.0
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.80) < 0.001, "Equal AGI and DEX investment must cancel to the 80% base.")
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.95) < 0.001, "Equal AGI and DEX investment must cancel to the 95% base.")
 	attacker.acc = 95.0
 	defender.evasion = 0.0
 	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.95) < 0.001, "Overwhelming accuracy must clamp at the 95% cap.")
@@ -50,17 +50,19 @@ func _test_resolver() -> void:
 	defender.evasion = 0.0
 	attacker.level = 80
 	defender.level = 80
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.80) < 0.001, "Same level must keep the 80% base chance.")
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.95) < 0.001, "Same level must keep the 95% base chance.")
 	attacker.level = 79
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.795) < 0.001, "One level above the attacker must cost 0.5%.")
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.945) < 0.001, "One level above the attacker must cost 0.5%.")
 	attacker.level = 78
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.79) < 0.001, "Two levels above the attacker must cost 1.0%.")
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.94) < 0.001, "Two levels above the attacker must cost 1.0%.")
 	attacker.level = 77
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.77) < 0.001, "Three levels above the attacker must escalate to a 3.0% penalty.")
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.92) < 0.001, "Three levels above the attacker must escalate to a 3.0% penalty.")
 	attacker.level = 81
 	defender.level = 80
-	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.805) < 0.001, "A target below the attacker must grant the 0.5% bonus per level.")
+	defender.evasion = 5.0
+	check(absf(resolver.resolve_incoming(attacker, defender).hit_chance - 0.905) < 0.001, "A target below the attacker must grant the 0.5% bonus per level.")
 	attacker.level = 1
+	defender.evasion = 0.0
 	attacker.acc = 1000.0
 	defender.evasion = 0.0
 	result = resolver.resolve_incoming(attacker, defender)

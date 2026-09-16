@@ -10,10 +10,9 @@ extends CanvasLayer
 @onready var _bar: Control = %Bar
 @onready var _fill: ColorRect = %Fill
 
-var _last_health: float = -1.0
-
 func _ready() -> void:
 	assert(stats != null, "HealthBarUI requires character stats.")
+	stats.stat_changed.connect(_on_stats_changed)
 	_update_fill()
 
 func _process(_delta: float) -> void:
@@ -27,10 +26,11 @@ func _process(_delta: float) -> void:
 	if _bar.visible:
 		_bar.position = camera.unproject_position(render_position)
 		_bar.position -= _bar.size * 0.5
-	if not is_equal_approx(stats.current_health, _last_health):
+
+func _on_stats_changed(property: StringName) -> void:
+	if property == &"current_health" or property == &"max_health":
 		_update_fill()
 
 func _update_fill() -> void:
-	_last_health = stats.current_health
 	var health_ratio := 0.0 if stats.max_health <= 0.0 else clampf(stats.current_health / stats.max_health, 0.0, 1.0)
 	_fill.size.x = 60.0 * health_ratio

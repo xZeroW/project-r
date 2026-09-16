@@ -32,7 +32,7 @@ recomputes them into the shared stats whenever a stat point is spent. See
 Player and monster movement read `movement_speed` from their assigned stats.
 Combat reads `attack_damage`, `attack_speed`, `acc`, `crit`, and flat `armour`,
 reduces `current_health`, and resolves with a single RO-contested accuracy roll
-(`hit% = clamp(80 + acc + level modifier − evasion, 5, 95)`); a failed roll is
+(`hit% = clamp(95 + acc + level modifier − evasion, 5, 95)`); a failed roll is
 `MISS` or `EVADED` (when evasion outscores accuracy), and a landed hit then
 rolls block (halving damage) and attacker crit (×1.5). The status panel's
 derived line shows the live `ATK / ASPD / Acc / Crit / Eva` values. The
@@ -45,11 +45,20 @@ Within one character, every component that reads a stat — root orchestrator,
 `MeleeCombat`, `HealthBarUI` — references the same per-instance resource so death
 detection, damage, and the displayed bar agree (the player scene shares a single
 `PlayerStats` sub-resource; see [Player death and respawn](player-respawn.md)).
+Every write to any stat emits change events: `CharacterStats.stat_changed(property)`
+fires from the property setter, so `HealthBarUI` updates its fill on
+`current_health`/`max_health` changes instead of polling the resource each frame.
+This is the shared-state change bus for the stat resource; future UIs can
+subscribe instead of polling. (`Resource` already exposes a no-argument `changed`
+signal; the stat bus uses the argument-carrying `stat_changed` name to avoid
+shadowing it.)
 
 ## Decision history
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-16 | Confirmed | `CharacterStats.stat_changed(property)` fires from every stat setter; `HealthBarUI` subscribes and drops its per-frame `_last_health` polling. The stat resource is now an explicit change-notification bus. | Dependency-injection pass (no container). |
+| 2026-09-16 | Confirmed | Hit-roll base raised from 80 to 95: `hit% = clamp(95 + acc + level mod − evasion, 5, 95)`. Equal acc/evasion cancels to the 95% base. | Owner's accuracy-base request. |
 | 2026-09-16 | Confirmed | `acc` and `crit` join the stat set; evasion, accuracy, and crit are now live combat rolls. Block stays 0 until shields. | Combat-math pass (Phase A). |
 | 2026-09-16 | Confirmed | Accuracy default dropped from 90 to 0 and the resolver merged accuracy/evasion into one RO-contested roll; DEX and AGI now give 1 point each so they cancel 1-for-1. | Owner's AGI balance pass. |
 | 2026-09-15 | Confirmed | Stat allocation recomputes player derived stats (attack damage, attack speed, evasion, max health/mana) into the shared stat resource. | Owner's status-points request. |

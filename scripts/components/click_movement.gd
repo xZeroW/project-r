@@ -65,10 +65,10 @@ func _resolve_click(body: CharacterBody3D) -> void:
 	var hit := body.get_world_3d().direct_space_state.intersect_ray(query)
 	var collider := hit.get("collider") as Node
 	if collider != null and collider.is_in_group(&"monsters"):
-		var enemy := collider.get_node_or_null("Combat") as MeleeCombat
-		if enemy != null and enemy.damage_enabled and enemy.stats.current_health > 0.0:
+		var enemy := collider as Monster
+		if enemy != null and enemy.combat.damage_enabled and enemy.combat.stats.current_health > 0.0:
 			cancel()
-			enemy_selected.emit(enemy)
+			enemy_selected.emit(enemy.combat)
 		return
 	if collider == null or not collider.is_in_group(&"walkable_ground"):
 		return

@@ -44,6 +44,7 @@ func run() -> void:
 	monster.set_physics_process(false)
 	other.set_physics_process(false)
 	var experience := player.get_node("Experience") as Experience
+	var player_combat := player.get_node("Combat") as MeleeCombat
 	var hud := player.get_node("ExperienceUI") as ExperienceUI
 	var force_hit := func() -> float: return 0.0
 	monster.combat.resolver.dice = force_hit
@@ -51,29 +52,29 @@ func run() -> void:
 	var data := DamageData.new()
 	data.source = player
 	data.amount = 20
-	monster.combat.take_damage(data)
+	monster.combat.take_damage(data, player_combat)
 	check(experience.current_experience == 0, "Nonlethal damage must not award EXP.")
 	data.amount = 1000
-	monster.combat.take_damage(data)
+	monster.combat.take_damage(data, player_combat)
 	check(experience.current_experience == 0, "Invulnerable hits must not award EXP.")
 	monster.combat.invulnerability = 0
-	monster.combat.take_damage(data)
+	monster.combat.take_damage(data, player_combat)
 	check(experience.current_experience == 2, "Player's lethal hit must award Poring EXP.")
-	monster.combat.take_damage(data)
+	monster.combat.take_damage(data, player_combat)
 	check(experience.current_experience == 2, "Repeated corpse hits must not award EXP.")
 	for kill: int in range(4):
 		monster._physics_process(monster.respawn_delay + 0.1)
-		monster.combat.take_damage(data)
+		monster.combat.take_damage(data, player_combat)
 	check(experience.level == 2 and experience.current_experience == 1, "Respawned Porings must award once per life.")
 	check(hud._level_label.text == "Base Lv. 2" and hud._exp_label.text == "Base EXP  1 / 16", "HUD must refresh level and overflow EXP.")
 	check(hud._notice.text.contains("LEVEL UP!"), "Level-up feedback must be visible.")
 	check(hud._bar.value == 1 and hud._bar.max_value == 16, "EXP bar must reflect the next level threshold.")
 	data.source = null
-	other.combat.take_damage(data)
+	other.combat.take_damage(data, null)
 	check(experience.current_experience == 1, "Unattributed deaths must not grant player EXP.")
 	other._physics_process(other.respawn_delay + 0.1)
 	data.source = monster
-	other.combat.take_damage(data)
+	other.combat.take_damage(data, monster.combat)
 	check(experience.current_experience == 1, "Another actor's kill must not grant player EXP.")
 	var second_player := (load("res://scenes/player.tscn") as PackedScene).instantiate()
 	root.add_child(second_player)

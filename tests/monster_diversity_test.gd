@@ -62,17 +62,17 @@ func run() -> void:
 	data.source = player
 	data.amount = 30.0
 	poring.combat.invulnerability = 0.0
-	poring.combat.take_damage(data)
+	poring.combat.take_damage(data, player_combat)
 	check(poring.stats.current_health == 70.0, "A hit on Poring must reduce only Poring's health.")
 	check(poporing.stats.current_health == 180.0, "Poring damage must not affect Poporing health.")
 	# Kill credit and rewards are independent per instance.
 	data.amount = 1000.0
 	poring.combat.invulnerability = 0.0
-	poring.combat.take_damage(data)
+	poring.combat.take_damage(data, player_combat)
 	check(experience.current_experience == 2, "Poring's lethal hit must award exactly its definition EXP.")
 	data.amount = 1000.0
 	poporing.combat.invulnerability = 0.0
-	poporing.combat.take_damage(data)
+	poporing.combat.take_damage(data, player_combat)
 	check(experience.level == 2 and experience.current_experience == 1, "Poporing's lethal hit must stack its own 8 EXP onto Poring's 2, crossing into level 2.")
 	# Respawn restores the specific variant's tint, not a shared white.
 	poporing._physics_process(poporing.respawn_delay)

@@ -7,6 +7,7 @@ signal attack_finished
 enum State { IDLE, ENGAGED, RETURNING, DEAD }
 
 @export var target: CharacterBody3D
+@export var target_combat: MeleeCombat
 @export var stats: CharacterStats
 @export var definition: MonsterDefinition
 @export var aggressive: bool = true
@@ -32,10 +33,11 @@ var _stuck_time: float = 0.0
 
 func _ready() -> void:
 	assert(stats != null, "Monster requires character stats.")
+	assert(target != null, "Monster requires a player target.")
+	assert(target_combat != null, "Monster requires a reference to the player's MeleeCombat component.")
 	if definition != null:
 		_apply_definition()
 	combat.stats = stats
-	assert(target != null, "Monster requires a player target.")
 	_spawn_position = global_position
 	combat.damaged.connect(_on_damaged)
 	combat.died.connect(_on_died)
@@ -91,8 +93,7 @@ func _physics_process(delta: float) -> void:
 			_begin_return()
 		_stop_engagement()
 		return
-	var target_combat := target.get_node_or_null("Combat") as MeleeCombat
-	if target_combat == null or target_combat.stats.current_health <= 0.0:
+	if target_combat.stats.current_health <= 0.0:
 		if state == State.ENGAGED:
 			_begin_return()
 		_stop_engagement()

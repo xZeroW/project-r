@@ -35,13 +35,13 @@ defaults.
 | AGI | evasion | `1·AGI` points contested 1-for-1 against the attacker's accuracy in the RO hit roll |
 | VIT | max health | `100 + 10·VIT` |
 | INT | max mana | `100 + 5·INT` (data-only until mana is spent) |
-| DEX | accuracy | `1·DEX` points contested 1-for-1 against evasion; `hit% = clamp(80 + acc − evasion, 5%, 95%)` |
+| DEX | accuracy | `1·DEX` points contested 1-for-1 against evasion; `hit% = clamp(95 + acc − evasion, 5%, 95%)` |
 | LUK | crit chance | `0.3·LUK` percent chance on a landed hit for 150% damage |
 
 With all base stats at 0 a fresh player has 100 max/current health, 100
 max/current mana, 20 attack damage, 1.0 attack speed, 0 accuracy, 0 crit, and 0
 evasion. Accuracy and evasion resolve together through a single RO-contested
-combat roll (`hit% = clamp(80 + acc − evasion, 5%, 95%)`); crit rolls on landed
+combat roll (`hit% = clamp(95 + acc − evasion, 5%, 95%)`); crit rolls on landed
 hits; see [Combat prototype](combat-prototype.md). `block` stays at 0 until
 shields exist.
 
@@ -76,6 +76,7 @@ panel click blocking, and per-instance independence.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-16 | Confirmed | Hit-roll base raised from 80 to 95: equal DEX/AGI investment now cancels 1-for-1 to the 95% base (`hit% = clamp(95 + acc − evasion, 5%, 95%)`). | Owner's accuracy-base request. |
 | 2026-09-15 | Confirmed | Stat allocation is a composition of `StatusPoints` + `StatusUI`, mirroring Experience. | Project owner's brief. |
 | 2026-09-16 | Confirmed | Fresh players spawn with all base stats at 0 and 0 unspent points (20 ATK / 1.0 ASPD / 0 acc / 100 HP); the first +5 grant arrives on level-up. | Owner's correction to the starting loadout. |
 | 2026-09-15 | Confirmed | Status window toggled on the physical C key; allocation is session-local and resets on restart/`R`. | Owner's brief; prototype lifecycle. |

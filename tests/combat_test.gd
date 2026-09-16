@@ -67,7 +67,7 @@ func run() -> void:
 	data.amount = 1000.0
 	data.source = player
 	enemy_combat.invulnerability = 0.0
-	enemy_combat.take_damage(data)
+	enemy_combat.take_damage(data, player_combat)
 	check(enemy_combat.stats.current_health == 0.0, "Lethal damage must clamp health to zero.")
 	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "65", "Lethal popup must show actual remaining health lost.")
 	check(not enemy_combat.attack(player_combat), "Dead actors cannot attack.")

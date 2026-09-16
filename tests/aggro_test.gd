@@ -36,7 +36,7 @@ func run() -> void:
 	var hit := DamageData.new()
 	hit.amount = 20.0
 	hit.source = player
-	monster.combat.take_damage(hit)
+	monster.combat.take_damage(hit, player_combat)
 	check(monster.state == Monster.State.ENGAGED, "Passive monster must retaliate when attacked.")
 	monster._physics_process(0.016)
 	check(monster._is_attacking, "Retaliating monster must attack within range.")
@@ -54,7 +54,7 @@ func run() -> void:
 	check(not monster.combat.damage_enabled, "Returning monster must not be attackable.")
 	var returning_health := monster.stats.current_health
 	monster.combat.invulnerability = 0.0
-	monster.combat.take_damage(hit)
+	monster.combat.take_damage(hit, player_combat)
 	check(monster.stats.current_health == returning_health, "Return-home damage must be ignored.")
 	targeting.select(monster.combat)
 	check(not targeting.has_target(), "Returning monsters must not be selectable.")
@@ -86,7 +86,7 @@ func run() -> void:
 	targeting.select(monster.combat)
 	monster.combat.invulnerability = 0.0
 	hit.amount = 1000.0
-	monster.combat.take_damage(hit)
+	monster.combat.take_damage(hit, player_combat)
 	check(monster.state == Monster.State.DEAD, "Lethal damage must enter dead state.")
 	check(not targeting.has_target(), "Death must invalidate player selection.")
 	monster._physics_process(0.3)
