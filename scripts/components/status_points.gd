@@ -15,11 +15,18 @@ const BASE_ATTACK_SPEED := 1.0
 const HEALTH_PER_VIT := 10.0
 const MANA_PER_INT := 5.0
 const DAMAGE_PER_STR := 2.0
-const ATTACK_SPEED_PER_AGI := 0.03
-const EVASION_PER_AGI := 2.0
-const BASE_ACC := 90.0
-const ACC_PER_DEX := 2.0
+const EVASION_PER_AGI := 1.0
+const BASE_ACC := 0.0
+const ACC_PER_DEX := 1.0
 const CRIT_PER_LUK := 0.3
+# Ragnarok M: Eternal Love attack-speed model (port). ET shows attack speed as
+# hits-per-second percent: panel = 50 / (200 − stat_aspd), and AGI feeds a
+# square-root curve with diminishing returns instead of classic RO's linear
+# `4·AGI/1000`. gain_per_point therefore collapses as AGI grows.
+const ET_JOB_BASE_ASPD := 156.0              # ET physical-job base (unarmed)
+const ET_AGI_ASPD_WEIGHT := 9.9999           # ET's √(10·AGI) term; 9.9999 dodges exact squares
+const ET_ASPD_CORRECTION_FACTOR := 7.15      # ET's (√205 − √AGI) correction scale
+const ET_ASPD_CAP := 189.583333333333        # final-ASPD ceiling (the 480% panel cap)
 
 @export var stats: CharacterStats
 
@@ -77,14 +84,32 @@ func grant_level_up_points() -> void:
 	points_remaining += BASE_POINTS_PER_LEVEL
 	points_remaining_changed.emit(points_remaining)
 
-## Pushes derived values into the shared CharacterStats. Accuracy (DEX) and crit
-## (LUK) feed the shared combat resolver; evasion (AGI) becomes a dodge roll that
-## runs only after a stage-one hit succeeds.
+## ET native 200-scale (delay) attack speed for [agi]. Skill and equipment ASPD
+## are absent from the prototype, so the stat term is:
+##   job base − (√205 − √AGI) / 7.15 + √(9.9999·AGI) · penalty
+## where a fast job base (>145) weights AGI with `1 − (base − 144) / 50`.
+func et_stat_aspd(agi: int) -> float:
+	var penalty := 0.96 if ET_JOB_BASE_ASPD <= 145.0 else 1.0 - (ET_JOB_BASE_ASPD - 144.0) / 50.0
+	var value := ET_JOB_BASE_ASPD
+	value -= (sqrt(205.0) - sqrt(float(agi))) / ET_ASPD_CORRECTION_FACTOR
+	value += sqrt(ET_AGI_ASPD_WEIGHT * float(agi)) * penalty
+	value = roundf(value * 1000.0) / 1000.0
+	return minf(value, ET_ASPD_CAP)
+
+## ET panel attack speed: attacks per second as `50 / (200 − stat_aspd)`.
+func et_panel_aspd(agi: int) -> float:
+	return 50.0 / (200.0 - et_stat_aspd(agi))
+
+## Pushes derived values into the shared CharacterStats. Accuracy (DEX) and
+## evasion (AGI) feed the shared combat resolver's single RO-contested roll at
+## 1 point each, so they cancel 1-for-1; crit (LUK) rolls on landed hits.
+## Attack speed keeps `BASE_ATTACK_SPEED` at zero AGI and scales with the ET
+## square-root curve, plateauing as AGI grows.
 func recompute() -> void:
 	var previous_max_health := stats.max_health
 	var previous_max_mana := stats.max_mana
 	stats.attack_damage = BASE_ATTACK_DAMAGE + DAMAGE_PER_STR * _values[Stat.STR]
-	stats.attack_speed = BASE_ATTACK_SPEED + ATTACK_SPEED_PER_AGI * _values[Stat.AGI]
+	stats.attack_speed = BASE_ATTACK_SPEED * et_panel_aspd(_values[Stat.AGI]) / et_panel_aspd(0)
 	stats.evasion = EVASION_PER_AGI * _values[Stat.AGI]
 	stats.acc = BASE_ACC + ACC_PER_DEX * _values[Stat.DEX]
 	stats.crit = CRIT_PER_LUK * _values[Stat.LUK]

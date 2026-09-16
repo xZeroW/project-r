@@ -27,6 +27,20 @@ func _click_at(position: Vector2) -> void:
 		event.position = position
 		root.push_input(event, true)
 
+## Mirrors StatusPoints.et_stat_aspd so the diminishing shape is checked against
+## the documented ET constants while endpoint values below assert the live node.
+func _et_stat_aspd(agi: float) -> float:
+	var penalty := 0.96 if StatusPoints.ET_JOB_BASE_ASPD <= 145.0 else 1.0 - (StatusPoints.ET_JOB_BASE_ASPD - 144.0) / 50.0
+	var value := StatusPoints.ET_JOB_BASE_ASPD - (sqrt(205.0) - sqrt(agi)) / StatusPoints.ET_ASPD_CORRECTION_FACTOR \
+		+ sqrt(StatusPoints.ET_AGI_ASPD_WEIGHT * agi) * penalty
+	value = roundf(value * 1000.0) / 1000.0
+	return minf(value, StatusPoints.ET_ASPD_CAP)
+
+func _et_marginal_gain(from: int, to: int) -> float:
+	var panel_range := func(agi: float) -> float:
+		return 50.0 / (200.0 - _et_stat_aspd(agi))
+	return (panel_range.call(to) - panel_range.call(from)) / float(to - from)
+
 func run() -> void:
 	var scene: PackedScene = load("res://scenes/player.tscn")
 	var player_actor := scene.instantiate() as CharacterBody3D
@@ -46,7 +60,7 @@ func run() -> void:
 	check(is_equal_approx(stats.attack_speed, 1.0) and stats.evasion == 0.0, "Zero AGI must yield base attack speed and no evasion.")
 	check(stats.max_health == 100.0 and stats.max_mana == 100.0, "Zero VIT/INT must yield base 100 max health/mana.")
 	check(stats.current_health == 100.0 and stats.mana == 100.0, "Spawn must match current values to the base max.")
-	check(stats.acc == 90.0 and stats.crit == 0.0, "Zero DEX/LUK must yield base accuracy and no crit.")
+	check(stats.acc == 0.0 and stats.crit == 0.0, "Zero DEX/LUK must yield no accuracy or crit.")
 
 	check(not points.allocate(StatusPoints.Stat.STR), "Allocation must be denied with zero points.")
 	points.grant_level_up_points()
@@ -54,7 +68,7 @@ func run() -> void:
 	check(points.allocate(StatusPoints.Stat.STR), "Allocation must succeed while points remain.")
 	check(points.get_value(StatusPoints.Stat.STR) == 1 and points.get_points_remaining() == 4, "STR allocation must spend one point.")
 	check(stats.attack_damage == 22.0, "Each STR point must add 2 attack damage.")
-	check(points.allocate(StatusPoints.Stat.AGI) and is_equal_approx(stats.attack_speed, 1.03) and stats.evasion == 2.0, "Each AGI point must add attack speed and evasion.")
+	check(points.allocate(StatusPoints.Stat.AGI) and absf(stats.attack_speed - 1.05851) < 0.0005 and stats.evasion == 1.0, "Each AGI point must grow ET attack speed and add 1 evasion.")
 
 	stats.current_health = 50.0
 	check(points.allocate(StatusPoints.Stat.VIT) and stats.max_health == 110.0, "Each VIT point must raise max health by 10.")
@@ -63,7 +77,7 @@ func run() -> void:
 	check(points.allocate(StatusPoints.Stat.INT) and stats.max_mana == 105.0, "Each INT point must raise max mana by 5.")
 	check(stats.mana == 65.0, "INT must raise current mana by the same delta.")
 
-	check(points.allocate(StatusPoints.Stat.DEX) and stats.acc == 92.0, "Each DEX point must raise accuracy by 2.")
+	check(points.allocate(StatusPoints.Stat.DEX) and stats.acc == 1.0, "Each DEX point must add 1 accuracy (RO parity).")
 	check(stats.attack_damage == 22.0 and stats.max_health == 110.0, "DEX must not change damage or health.")
 	check(points.get_points_remaining() == 0, "Spending the last point must reach zero.")
 
@@ -107,6 +121,22 @@ func run() -> void:
 		check((ui._buttons[stat] as Button).disabled, "All plus buttons must disable at zero points.")
 	check(not points.allocate(StatusPoints.Stat.INT), "Zero points must deny further allocation.")
 
+	var curve_actor := scene.instantiate() as CharacterBody3D
+	root.add_child(curve_actor)
+	await process_frame
+	var curve_points := curve_actor.get_node("StatusPoints") as StatusPoints
+	var curve_stats := curve_actor.stats as CharacterStats
+	while curve_points.get_value(StatusPoints.Stat.AGI) < 10:
+		curve_points.grant_level_up_points()
+		check(curve_points.allocate(StatusPoints.Stat.AGI), "The curve grant must fund each AGI point.")
+	check(absf(curve_stats.attack_speed - 1.21185) < 0.0005, "Ten ET AGI points must reach the early square-root value.")
+	while curve_points.get_value(StatusPoints.Stat.AGI) < 99:
+		curve_points.grant_level_up_points()
+		check(curve_points.allocate(StatusPoints.Stat.AGI), "The curve grant must fund each AGI point to the cap.")
+	check(absf(curve_stats.attack_speed - 2.22253) < 0.0005, "Full ET AGI must plateau at the expected square-root value.")
+	check(_et_marginal_gain(1, 10) > _et_marginal_gain(90, 99), "Attack speed gain per AGI must diminish as AGI grows.")
+	curve_actor.queue_free()
+
 	var second_actor := scene.instantiate() as CharacterBody3D
 	root.add_child(second_actor)
 	await process_frame
@@ -119,5 +149,5 @@ func run() -> void:
 	player_actor.queue_free()
 	await process_frame
 	if failures == 0:
-		print("PASS: zero-point spawn, derived mapping, health deltas, over-spend denial, level-up grants, UI toggle/plus/disable, click blocking, and instance independence")
+		print("PASS: zero-point spawn, derived mapping, health deltas, over-spend denial, level-up grants, ET attack-speed curve, UI toggle/plus/disable, click blocking, and instance independence")
 	quit(0 if failures == 0 else 1)

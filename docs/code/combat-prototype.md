@@ -18,19 +18,21 @@ status: confirmed
 - Successful damage flashes the sprite red. Defeated entities turn dark, stop moving/attacking, and disable their collider. The monster stops attacking a defeated player. A defeated player respawns at their spawn point after a short delay, paying 5% of the current level's Base EXP (never de-leveling); see [Player death and respawn](player-respawn.md).
 - Monsters now fade out on death and respawn at full health; passive monsters retaliate on hits and engaged monsters use a separate spawn leash. See [Monster lifecycle](monster-prototype.md).
 - **R** reloads the encounter, restoring the scene's initial health and positions.
-- **Combat math:** incoming attacks resolve in `MeleeCombat.take_damage` through
-  the shared `CombatResolver` in two stages. **Stage one** (accuracy) rolls the
-  attacker's `acc` plus the level modifier — no evasion — clamped 5%–95%. The
-  level shift adds nothing at equal levels, gives +0.5% per level the attacker
-  sits below the target, and costs 0.5% for each of the first two levels above,
-  then escalates to 2% per level beyond (95% / 94.5% / 94% / 92% at par acc). A
-  failed stage-one roll is a plain `MISS` that skips everything else. On a
-  success the target rolls **stage two**: evasion (its `evasion` percent chance
-  to dodge), then block (`block` percent chance to halve damage), then the
-  attacker rolls crit (150% damage, tagged on `DamageData.is_crit`). Landed hits
-  then subtract flat armour and clamp at zero. Damage numbers show
-  `MISS`/`EVADE`/`BLOCK` and colour crits. Tests inject `CombatResolver.dice` for
-  deterministic rolls.
+- **Combat math:** incoming attacks resolve in `MeleeCombat.take_damage`
+  through the shared `CombatResolver` with a single RO-contested roll:
+  `hit% = clamp(80 + attacker.acc + level modifier − defender.evasion, 5%, 95%)`.
+  Accuracy and evasion are the same scale (DEX and AGI each contribute 1 point
+  per stat point) and cancel 1-for-1, giving the classic pre-renewal 80% base
+  hit chance at equal investment. The level shift adds nothing at equal levels,
+  gives +0.5% per level the attacker sits below the target, and costs 0.5% for
+  each of the first two levels above, then escalates to 2% per level beyond
+  (80% / 79.5% / 79% / 77% at par acc). A failed roll is tagged `MISS` (plain
+  attacker whiff) or `EVADED` when the defender's evasion outscores the
+  attacker's accuracy. On a landed hit the target rolls block (`block` percent
+  chance to halve damage), then the attacker rolls crit (150% damage, tagged on
+  `DamageData.is_crit`). Landed hits then subtract flat armour and clamp at
+  zero. Damage numbers show `MISS`/`EVADE`/`BLOCK` and colour crits. Tests
+  inject `CombatResolver.dice` for deterministic rolls.
 - Mana remains data-only (no spendable skills yet). Attack/death sprite clips are
   not part of this pass.
 
@@ -57,6 +59,7 @@ and popup cleanup alongside existing damage checks.
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
 | 2026-09-16 | Confirmed | Evasion, accuracy, and crit are live rolls via an injectable `CombatResolver`; crits are 150% on landed hits. Block stays uncounted at 0. | Combat-math pass (Phase A). |
+| 2026-09-16 | Confirmed | Replaced the two-stage accuracy-then-evasion pipeline with RO's single contested roll: `hit% = clamp(80 + acc + level mod − evasion, 5, 95)`, with DEX and AGI at 1 point each so invesment cancels 1-for-1. Exact stat parity keeps the 80% base; failed rolls read MISS or EVADED (when evasion outscores accuracy). | Owner's AGI balance pass (evasion felt too strong as a flat second roll). |
 | 2026-09-15 | Confirmed | Defeated players respawn at their spawn point with a 5% Base EXP penalty and no de-level. | Owner's player death/respawn request. |
 | 2026-09-14 | Confirmed | Render the ring in the 3D ground plane behind the sprite, like the contact shadow. | Owner's ring occlusion correction. |
 | 2026-09-14 | Confirmed | Replace corner brackets/arrow with a soft orange-gold ground ring. | Owner's Tree of Savior screenshot reference. |

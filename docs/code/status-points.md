@@ -31,17 +31,19 @@ defaults.
 | Base stat | Derived | Formula |
 | --- | --- | --- |
 | STR | attack damage | `20 + 2·STR` |
-| AGI | attack speed | `1.0 + 0.03·AGI` |
-| AGI | evasion | `2·AGI` — subtracts from an attacker's accuracy in combat |
+| AGI | attack speed | Eternal-Love hits/sec curve: `1.0 × panel(AGI) / panel(0)` where `panel(agi) = 50 / (200 − stat_aspd)` and `stat_aspd(agi) = 156 − (√205 − √AGI)/7.15 + √(9.9999·AGI)·0.76`. Square-root returns: 1.0 at 0 AGI, ≈1.21 at 10, ≈2.22 at 99 — the gain per point diminishes as AGI grows. |
+| AGI | evasion | `1·AGI` points contested 1-for-1 against the attacker's accuracy in the RO hit roll |
 | VIT | max health | `100 + 10·VIT` |
 | INT | max mana | `100 + 5·INT` (data-only until mana is spent) |
-| DEX | accuracy | `90 + 2·DEX` percent, clamped 5%–95% |
+| DEX | accuracy | `1·DEX` points contested 1-for-1 against evasion; `hit% = clamp(80 + acc − evasion, 5%, 95%)` |
 | LUK | crit chance | `0.3·LUK` percent chance on a landed hit for 150% damage |
 
 With all base stats at 0 a fresh player has 100 max/current health, 100
-max/current mana, 20 attack damage, 1.0 attack speed, 90 accuracy, 0 crit, and 0
-evasion. Evasion, accuracy, and crit resolve through the shared combat rolls; see
-[Combat prototype](combat-prototype.md). `block` stays at 0 until shields exist.
+max/current mana, 20 attack damage, 1.0 attack speed, 0 accuracy, 0 crit, and 0
+evasion. Accuracy and evasion resolve together through a single RO-contested
+combat roll (`hit% = clamp(80 + acc − evasion, 5%, 95%)`); crit rolls on landed
+hits; see [Combat prototype](combat-prototype.md). `block` stays at 0 until
+shields exist.
 
 ## Confirmed — Health accounting on max growth
 
@@ -75,6 +77,8 @@ panel click blocking, and per-instance independence.
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
 | 2026-09-15 | Confirmed | Stat allocation is a composition of `StatusPoints` + `StatusUI`, mirroring Experience. | Project owner's brief. |
-| 2026-09-16 | Confirmed | Fresh players spawn with all base stats at 0 and 0 unspent points (20 ATK / 1.0 ASPD / 90 acc / 100 HP); the first +5 grant arrives on level-up. | Owner's correction to the starting loadout. |
+| 2026-09-16 | Confirmed | Fresh players spawn with all base stats at 0 and 0 unspent points (20 ATK / 1.0 ASPD / 0 acc / 100 HP); the first +5 grant arrives on level-up. | Owner's correction to the starting loadout. |
 | 2026-09-15 | Confirmed | Status window toggled on the physical C key; allocation is session-local and resets on restart/`R`. | Owner's brief; prototype lifecycle. |
-| 2026-09-16 | Confirmed | DEX drives accuracy (`90 + 2·DEX`, clamped 5–95%), LUK drives crit (`0.3·LUK` percent, ×1.5 on landed hits). Evasion became a post-hit dodge roll. | Owner's stat-calculation choices for the combat-math pass. |
+| 2026-09-16 | Confirmed | DEX drives accuracy (`1·DEX`, contested 1-for-1 with AGI evasion), LUK drives crit (`0.3·LUK` percent, ×1.5 on landed hits). Accuracy and evasion merged into RO's single contested roll. | Owner's AGI balance pass. |
+| 2026-09-16 | Confirmed | Rebalanced AGI to RO-faithful scaling: attack speed `+0.004`/point (the `4·AGI/1000` delay reduction) and evasion `+1`/point; the old `0.03` ASPD and `2·AGI` evasion were deemed overpowered. | Owner's AGI balance pass. |
+| 2026-09-16 | Confirmed | Attack speed ported to Ragnarok M: Eternal Love's square-root model (`panel = 50/(200 − stat_aspd)` with `stat_aspd = 156 − (√205 − √AGI)/7.15 + √(9.9999·AGI)·0.76`) — diminishing returns per AGI instead of classic RO's linear `4·AGI/1000`. Evasion stays `1·AGI`, which ET also uses (`1 AGI = +1 闪避`). | Owner's choice after Eternal-Love research. |
