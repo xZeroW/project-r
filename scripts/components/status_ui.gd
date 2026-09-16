@@ -67,13 +67,26 @@ func _build_stat_row(stat: StatusPoints.Stat) -> Control:
 	button.text = "+"
 	button.custom_minimum_size = Vector2(34, 30)
 	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(_allocate.bind(stat))
+	button.gui_input.connect(_on_stat_button_input.bind(stat))
 	_buttons[stat] = button
 	row.add_child(button)
 	return row
 
-func _allocate(stat: StatusPoints.Stat) -> void:
-	status_points.allocate(stat)
+func _on_stat_button_input(event: InputEvent, stat: StatusPoints.Stat) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			if mouse_event.ctrl_pressed:
+				_allocate(stat, 5)
+			elif mouse_event.shift_pressed:
+				_allocate(stat, status_points.get_points_remaining())
+			else:
+				_allocate(stat, 1)
+
+func _allocate(stat: StatusPoints.Stat, amount: int) -> void:
+	for _i in amount:
+		if not status_points.allocate(stat):
+			break
 
 func _add_label(parent: Control, color: Color) -> Label:
 	var label := Label.new()

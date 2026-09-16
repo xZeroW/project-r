@@ -16,6 +16,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("restart_encounter") and not event.is_echo():
 		get_tree().reload_current_scene.call_deferred()
 		get_viewport().set_input_as_handled()
+	if event.is_action_pressed("give_level") and not event.is_echo():
+		experience.add_experience(experience.get_required_experience())
+		get_viewport().set_input_as_handled()
 
 @onready var input_component: PlayerInput = %PlayerInput
 @onready var movement_component: CharacterMovement = %CharacterMovement

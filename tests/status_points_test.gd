@@ -18,12 +18,14 @@ func _push_key(key: Key) -> void:
 	event.pressed = false
 	root.push_input(event, true)
 
-func _click_at(position: Vector2) -> void:
+func _click_at(position: Vector2, shift: bool = false, ctrl: bool = false) -> void:
 	for pressed in [true, false]:
 		var event := InputEventMouseButton.new()
 		event.device = InputEvent.DEVICE_ID_MOUSE
 		event.button_index = MOUSE_BUTTON_LEFT
 		event.pressed = pressed
+		event.shift_pressed = shift
+		event.ctrl_pressed = ctrl
 		event.position = position
 		root.push_input(event, true)
 
@@ -120,6 +122,15 @@ func run() -> void:
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
 		check((ui._buttons[stat] as Button).disabled, "All plus buttons must disable at zero points.")
 	check(not points.allocate(StatusPoints.Stat.INT), "Zero points must deny further allocation.")
+
+	# Modifier clicks: Ctrl spends five, Shift spends all remaining.
+	points.grant_level_up_points()
+	points.grant_level_up_points()
+	var luk_button := ui._buttons[StatusPoints.Stat.LUK] as Button
+	_click_at(luk_button.get_global_rect().get_center(), false, true)
+	check(points.get_value(StatusPoints.Stat.LUK) == 5 and points.get_points_remaining() == 5, "Ctrl-click must spend five points.")
+	_click_at(luk_button.get_global_rect().get_center(), true, false)
+	check(points.get_value(StatusPoints.Stat.LUK) == 10 and points.get_points_remaining() == 0, "Shift-click must spend all remaining points.")
 
 	var curve_actor := scene.instantiate() as CharacterBody3D
 	root.add_child(curve_actor)
