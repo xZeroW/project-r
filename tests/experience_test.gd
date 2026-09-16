@@ -45,6 +45,9 @@ func run() -> void:
 	other.set_physics_process(false)
 	var experience := player.get_node("Experience") as Experience
 	var hud := player.get_node("ExperienceUI") as ExperienceUI
+	var force_hit := func() -> float: return 0.0
+	monster.combat.resolver.dice = force_hit
+	other.combat.resolver.dice = force_hit
 	var data := DamageData.new()
 	data.source = player
 	data.amount = 20

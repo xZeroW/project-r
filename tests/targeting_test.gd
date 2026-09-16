@@ -19,6 +19,11 @@ func run() -> void:
 	var clicks := player.get_node("ClickMovement") as ClickMovement
 	var combat := player.get_node("Combat") as MeleeCombat
 	var enemy := monster.get_node("Combat") as MeleeCombat
+	combat.stats.crit = 0.0
+	enemy.stats.crit = 0.0
+	var force_hit := func() -> float: return 0.0
+	combat.resolver.dice = force_hit
+	enemy.resolver.dice = force_hit
 	var camera := world.get_node("Camera3D") as Camera3D
 	player.set_physics_process(false)
 	monster.set_physics_process(false)
@@ -40,13 +45,13 @@ func run() -> void:
 	check(targeting.target == enemy, "Monster click must select that enemy.")
 	check(not clicks.has_destination(), "Selecting enemy must clear ground route.")
 	targeting.get_direction(combat, 4.0, 0.016)
-	check(enemy.stats.current_health == 78.0, "Selected nearby enemy must receive an auto-attack.")
+	check(enemy.stats.current_health == 80.0, "Selected nearby enemy must receive an auto-attack.")
 	targeting.get_direction(combat, 4.0, 0.016)
-	check(enemy.stats.current_health == 78.0, "Auto-attack must respect cooldown.")
+	check(enemy.stats.current_health == 80.0, "Auto-attack must respect cooldown.")
 	combat.cooldown = 0.0
 	enemy.invulnerability = 0.0
 	targeting.get_direction(combat, 4.0, 0.016)
-	check(enemy.stats.current_health == 56.0, "Auto-attack must repeat without another click.")
+	check(enemy.stats.current_health == 60.0, "Auto-attack must repeat without another click.")
 	# Accepted ground movement cancels selection through the same signal as ray picking.
 	clicks.destination_changed.emit(Vector3.ZERO)
 	check(not targeting.has_target(), "Accepted ground click must cancel targeting.")
@@ -70,7 +75,7 @@ func run() -> void:
 	targeting.select(enemy)
 	var chase := targeting.get_direction(combat, 4.0, 0.016)
 	check(not chase.is_zero_approx(), "Distant selected enemy must produce a navigation pursuit direction.")
-	check(enemy.stats.current_health == 56.0, "Pursuit must not deal out-of-range damage.")
+	check(enemy.stats.current_health == 60.0, "Pursuit must not deal out-of-range damage.")
 	targeting.record_motion(Vector3.ZERO, 1.1)
 	check(not targeting.has_target(), "Blocked pursuit must time out.")
 	targeting.select(enemy)

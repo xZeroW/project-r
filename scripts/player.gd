@@ -26,6 +26,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _ready() -> void:
 	assert(stats != null, "Player requires character stats.")
+	stats.level = experience.level
 	combat.defeated_enemy.connect(_on_defeated_enemy)
 	experience.leveled_up.connect(_on_leveled_up)
 	experience.leveled_up.connect(status_points.grant_level_up_points.unbind(1))
@@ -39,7 +40,8 @@ func _ready() -> void:
 func _on_defeated_enemy(enemy: MeleeCombat) -> void:
 	experience.add_experience(enemy.base_experience_reward)
 
-func _on_leveled_up(_level: int) -> void:
+func _on_leveled_up(level: int) -> void:
+	stats.level = level
 	stats.current_health = stats.max_health
 	stats.mana = stats.max_mana
 

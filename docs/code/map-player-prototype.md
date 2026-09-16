@@ -25,7 +25,7 @@ Build a map and player in Godot with WASD movement. Map textures are unnecessary
 
 The following are implemented prototype choices, not approved long-term specifications:
 
-- Godot 4.7 project using the existing Forward Plus renderer and Jolt physics configuration.
+- Godot 4.7 project using the existing Forward Plus renderer and the Rapier3D physics engine (`3d/physics_engine="Rapier3D"` in `project.godot`).
 - `scenes/world.tscn` is the entry point, with an orthographic camera initially tilted approximately 35.26 degrees downward and rotated 45 degrees around the vertical axis.
 - The camera follows the player's interpolated render position directly, without a trailing spring or catch-up delay. Project physics interpolation smooths the player between physics ticks; the camera reads `get_global_transform_interpolated()` in `_process()` and disables its own automatic interpolation to avoid applying it twice. `follow_target` is an exported `Node3D` reference wired in the world scene. The camera remains outside the player's hierarchy, so player rotation and scale do not affect it. A missing/freed target leaves the last follow center in place. Teleports must call `reset_physics_interpolation()` after repositioning to avoid interpolating across the map.
 - Hold Q / E to orbit left / right around the followed player at 90 degrees per second. Tilt, height relative to the follow center, orbit distance, and zoom remain fixed during orbit. `scripts/orbit_camera.gd` uses InputMap actions and reconstructs the transform from a wrapped angle to avoid accumulated transform drift. Camera orientation updates before player physics so movement uses the current view basis; position tracking and zoom smooth during render updates.
@@ -98,4 +98,5 @@ The navmesh in `scripts/prototype_map.gd` is baked at runtime over the floor and
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-16 | Confirmed | Project physics engine is Rapier3D (set in `project.godot` since the click-to-attack pass); older docs that named Jolt are corrected. | Doc audit against live engine config. |
 | 2026-09-13 | Confirmed | Boundary colliders and visual meshes remain aligned at 0.5 units thick and 0.8 units tall. Taller visual walls hide the camera-side billboard and make the character appear inside the wall. | User render report and corrected wall presentation. |

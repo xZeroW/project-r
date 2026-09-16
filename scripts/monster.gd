@@ -8,6 +8,7 @@ enum State { IDLE, ENGAGED, RETURNING, DEAD }
 
 @export var target: CharacterBody3D
 @export var stats: CharacterStats
+@export var definition: MonsterDefinition
 @export var aggressive: bool = true
 @export_range(0.0, 50.0, 0.1, "or_greater") var aggro_radius: float = 6.0
 @export_range(0.1, 100.0, 0.1, "or_greater") var leash_distance: float = 10.0
@@ -30,8 +31,11 @@ var _stuck_time: float = 0.0
 @onready var _shadow: MeshInstance3D = $CollisionShape3D/ContactShadow
 
 func _ready() -> void:
-	assert(target != null, "Monster requires a player target.")
 	assert(stats != null, "Monster requires character stats.")
+	if definition != null:
+		_apply_definition()
+	combat.stats = stats
+	assert(target != null, "Monster requires a player target.")
 	_spawn_position = global_position
 	combat.damaged.connect(_on_damaged)
 	combat.died.connect(_on_died)
@@ -40,6 +44,31 @@ func _ready() -> void:
 	_navigation_agent.path_desired_distance = 0.5
 	_navigation_agent.target_desired_distance = attack_range
 	_set_target_when_navigation_is_ready.call_deferred()
+
+func _apply_definition() -> void:
+	stats.level = definition.level
+	stats.max_health = definition.max_health
+	stats.current_health = definition.max_health
+	stats.max_mana = definition.max_mana
+	stats.mana = definition.max_mana
+	stats.movement_speed = definition.movement_speed
+	stats.attack_speed = definition.attack_speed
+	stats.attack_damage = definition.attack_damage
+	stats.armour = definition.armour
+	stats.evasion = definition.evasion
+	stats.acc = definition.acc
+	stats.crit = definition.crit
+	stats.block = definition.block
+	combat.base_experience_reward = definition.experience_reward
+	aggressive = definition.aggressive
+	aggro_radius = definition.aggro_radius
+	leash_distance = definition.leash_distance
+	respawn_delay = definition.respawn_delay
+	attack_range = definition.attack_range
+	attack_duration = definition.attack_duration
+	# The definition tint becomes MeleeCombat's base color; the damage flash and
+	# death fade keep using visual.modulate and restore this color when they end.
+	combat.base_modulate = definition.tint
 
 func _physics_process(delta: float) -> void:
 	if state == State.DEAD:
@@ -171,7 +200,7 @@ func _on_died() -> void:
 
 func _respawn() -> void:
 	_finish_return()
-	combat.visual.modulate = Color.WHITE
+	combat.visual.modulate = combat.base_modulate
 	combat.visual.play(&"idle")
 	($CollisionShape3D as CollisionShape3D).set_deferred("disabled", false)
 	_health_bar.show()

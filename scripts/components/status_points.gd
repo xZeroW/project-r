@@ -17,18 +17,21 @@ const MANA_PER_INT := 5.0
 const DAMAGE_PER_STR := 2.0
 const ATTACK_SPEED_PER_AGI := 0.03
 const EVASION_PER_AGI := 2.0
+const BASE_ACC := 90.0
+const ACC_PER_DEX := 2.0
+const CRIT_PER_LUK := 0.3
 
 @export var stats: CharacterStats
 
-var points_remaining: int = 5
+var points_remaining: int = 0
 
 var _values: Dictionary[Stat, int] = {
-	Stat.STR: 1,
-	Stat.AGI: 1,
-	Stat.VIT: 1,
-	Stat.INT: 1,
-	Stat.DEX: 1,
-	Stat.LUK: 1,
+	Stat.STR: 0,
+	Stat.AGI: 0,
+	Stat.VIT: 0,
+	Stat.INT: 0,
+	Stat.DEX: 0,
+	Stat.LUK: 0,
 }
 
 func _ready() -> void:
@@ -68,18 +71,23 @@ func allocate(stat: Stat) -> bool:
 	points_remaining_changed.emit(points_remaining)
 	return true
 
-## RO classic: each Base level adds 5 stat points. Wired by the player orchestrator.
+## RO classic: each Base level adds 5 stat points. A fresh spawn has zero points;
+## the first level-up (wired by the player orchestrator) grants the first batch.
 func grant_level_up_points() -> void:
 	points_remaining += BASE_POINTS_PER_LEVEL
 	points_remaining_changed.emit(points_remaining)
 
-## Pushes derived values into the shared CharacterStats. DEX/LUK stay data-only.
+## Pushes derived values into the shared CharacterStats. Accuracy (DEX) and crit
+## (LUK) feed the shared combat resolver; evasion (AGI) becomes a dodge roll that
+## runs only after a stage-one hit succeeds.
 func recompute() -> void:
 	var previous_max_health := stats.max_health
 	var previous_max_mana := stats.max_mana
 	stats.attack_damage = BASE_ATTACK_DAMAGE + DAMAGE_PER_STR * _values[Stat.STR]
 	stats.attack_speed = BASE_ATTACK_SPEED + ATTACK_SPEED_PER_AGI * _values[Stat.AGI]
 	stats.evasion = EVASION_PER_AGI * _values[Stat.AGI]
+	stats.acc = BASE_ACC + ACC_PER_DEX * _values[Stat.DEX]
+	stats.crit = CRIT_PER_LUK * _values[Stat.LUK]
 	var new_max_health := BASE_MAX_HEALTH + HEALTH_PER_VIT * _values[Stat.VIT]
 	var new_max_mana := BASE_MAX_MANA + MANA_PER_INT * _values[Stat.INT]
 	# RO behavior: raising a maximum raises the current value by the same delta, so

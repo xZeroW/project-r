@@ -39,27 +39,32 @@ func run() -> void:
 	var experience := player_actor.get_node("Experience") as Experience
 	var player_input := player_actor.get_node("PlayerInput") as PlayerInput
 
-	check(points.get_points_remaining() == 5, "Players must spawn with 5 unspent points.")
+	check(points.get_points_remaining() == 0, "Players must spawn with zero unspent points.")
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
-		check(points.get_value(stat) == 1, "All six base stats must start at 1.")
-	check(stats.attack_damage == 22.0, "Base STR must yield 20 + 2 attack damage.")
-	check(is_equal_approx(stats.attack_speed, 1.03) and stats.evasion == 2.0, "Base AGI must yield attack speed and evasion.")
-	check(stats.max_health == 110.0 and stats.max_mana == 105.0, "Base VIT/INT must yield 110 max health and 105 max mana.")
-	check(stats.current_health == 110.0 and stats.mana == 105.0, "Raising a max at spawn must raise the current value to match.")
+		check(points.get_value(stat) == 0, "All six base stats must start at 0.")
+	check(stats.attack_damage == 20.0, "Zero STR must yield the 20 base attack damage.")
+	check(is_equal_approx(stats.attack_speed, 1.0) and stats.evasion == 0.0, "Zero AGI must yield base attack speed and no evasion.")
+	check(stats.max_health == 100.0 and stats.max_mana == 100.0, "Zero VIT/INT must yield base 100 max health/mana.")
+	check(stats.current_health == 100.0 and stats.mana == 100.0, "Spawn must match current values to the base max.")
+	check(stats.acc == 90.0 and stats.crit == 0.0, "Zero DEX/LUK must yield base accuracy and no crit.")
 
+	check(not points.allocate(StatusPoints.Stat.STR), "Allocation must be denied with zero points.")
+	points.grant_level_up_points()
+	check(points.get_points_remaining() == 5, "A level-up grant must add 5 points.")
 	check(points.allocate(StatusPoints.Stat.STR), "Allocation must succeed while points remain.")
-	check(points.get_value(StatusPoints.Stat.STR) == 2 and points.get_points_remaining() == 4, "STR allocation must spend one point.")
-	check(stats.attack_damage == 24.0, "Each STR point must add 2 attack damage.")
-	check(points.allocate(StatusPoints.Stat.AGI) and is_equal_approx(stats.attack_speed, 1.06) and stats.evasion == 4.0, "Each AGI point must add attack speed and evasion.")
+	check(points.get_value(StatusPoints.Stat.STR) == 1 and points.get_points_remaining() == 4, "STR allocation must spend one point.")
+	check(stats.attack_damage == 22.0, "Each STR point must add 2 attack damage.")
+	check(points.allocate(StatusPoints.Stat.AGI) and is_equal_approx(stats.attack_speed, 1.03) and stats.evasion == 2.0, "Each AGI point must add attack speed and evasion.")
 
 	stats.current_health = 50.0
-	check(points.allocate(StatusPoints.Stat.VIT) and stats.max_health == 120.0, "Each VIT point must raise max health by 10.")
+	check(points.allocate(StatusPoints.Stat.VIT) and stats.max_health == 110.0, "Each VIT point must raise max health by 10.")
 	check(stats.current_health == 60.0, "VIT must raise current health by the same delta.")
 	stats.mana = 60.0
-	check(points.allocate(StatusPoints.Stat.INT) and stats.max_mana == 110.0, "Each INT point must raise max mana by 5.")
+	check(points.allocate(StatusPoints.Stat.INT) and stats.max_mana == 105.0, "Each INT point must raise max mana by 5.")
 	check(stats.mana == 65.0, "INT must raise current mana by the same delta.")
 
-	check(points.allocate(StatusPoints.Stat.DEX) and stats.attack_damage == 24.0 and stats.max_health == 120.0, "DEX must stay data-only.")
+	check(points.allocate(StatusPoints.Stat.DEX) and stats.acc == 92.0, "Each DEX point must raise accuracy by 2.")
+	check(stats.attack_damage == 22.0 and stats.max_health == 110.0, "DEX must not change damage or health.")
 	check(points.get_points_remaining() == 0, "Spending the last point must reach zero.")
 
 	var damage_before := stats.attack_damage
@@ -90,7 +95,7 @@ func run() -> void:
 	var dex_button := ui._buttons[StatusPoints.Stat.DEX] as Button
 	check(not dex_button.disabled, "Plus buttons must start enabled.")
 	_click_at(dex_button.get_global_rect().get_center())
-	check(points.get_value(StatusPoints.Stat.DEX) == 3 and points.get_points_remaining() == 4, "The plus button must spend a point.")
+	check(points.get_value(StatusPoints.Stat.DEX) == 2 and points.get_points_remaining() == 4, "The plus button must spend a point.")
 	check(move_requests[0] == 1, "Clicking a plus button must not leak into click-to-move.")
 
 	points.allocate(StatusPoints.Stat.STR)
@@ -107,12 +112,12 @@ func run() -> void:
 	await process_frame
 	var second_points := second_actor.get_node("StatusPoints") as StatusPoints
 	check(stats != second_actor.stats, "Two player instances must own separate stats.")
-	check(second_points.get_points_remaining() == 5 and second_points.get_value(StatusPoints.Stat.STR) == 1, "The second player must start fresh.")
+	check(second_points.get_points_remaining() == 0 and second_points.get_value(StatusPoints.Stat.STR) == 0, "The second player must start fresh.")
 	points.allocate(StatusPoints.Stat.STR)
-	check(second_points.get_points_remaining() == 5 and second_points.get_value(StatusPoints.Stat.STR) == 1, "Allocation on one player must not leak to another.")
+	check(second_points.get_points_remaining() == 0 and second_points.get_value(StatusPoints.Stat.STR) == 0, "Allocation on one player must not leak to another.")
 	second_actor.queue_free()
 	player_actor.queue_free()
 	await process_frame
 	if failures == 0:
-		print("PASS: status base stats, derived mapping, health deltas, over-spend denial, level-up grants, UI toggle/plus/disable, click blocking, and instance independence")
+		print("PASS: zero-point spawn, derived mapping, health deltas, over-spend denial, level-up grants, UI toggle/plus/disable, click blocking, and instance independence")
 	quit(0 if failures == 0 else 1)

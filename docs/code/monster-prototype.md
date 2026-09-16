@@ -7,14 +7,26 @@ status: confirmed
 ## Current implementation — Monster lifecycle
 
 `Monster.State` explicitly tracks **IDLE**, **ENGAGED**, **RETURNING**, and **DEAD**.
-The Inspector exposes:
+A `MonsterDefinition` Resource drives every instance. When a `definition` is
+assigned, `_ready` derives the monster's stats, `MeleeCombat` EXP reward, the
+behavior settings below, and its presentation tint from that definition; when it
+is absent the scene's default `stats` and exports apply. Monster definitions
+live in `resources/monsters/*.tres` (`Poring`: Lv 1, 100 HP, 10 damage, 2 EXP,
+white; `Poporing`: Lv 2, 180 HP, 16 damage, 8 EXP, wider aggro/leash, green tint —
+no new art). The Inspector exposes:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
+| `level` | 1 | Static base level from the definition; feeds the hit-chance level modifier in combat. Monsters never gain EXP. |
 | `aggressive` | true | Automatically acquire the assigned living player nearby. |
 | `aggro_radius` | 6.0 | Horizontal distance from monster to player for initial acquisition only; zero disables automatic acquisition. |
 | `leash_distance` | 10.0 | Maximum horizontal distance from spawn for both monster and engaged player. |
 | `respawn_delay` | 5.0 | Seconds from death until respawn (minimum 0.7). |
+
+Each instance owns independent stats; `combat.stats` is unified with the
+monster root's `CharacterStats` resource. The definition tint becomes
+`MeleeCombat.base_modulate`, so the damage flash returns the sprite to its
+variant color (`visual.modulate` never hard-codes white).
 
 Passive monsters remain idle until the assigned player hits them. A valid hit starts
 engagement regardless of aggression, provided the attacker is inside the spawn leash.
@@ -34,13 +46,17 @@ resets call `reset_physics_interpolation()` to avoid streaking across the map.
 Damage is implemented by the shared melee component; see [Combat prototype](combat-prototype.md).
 `tests/aggro_test.gd` verifies passive retaliation, acquisition vs engagement,
 leash cancellation, return immunity/healing, death fade, and full respawn reset.
+`tests/monster_diversity_test.gd` verifies per-instance definitions, independent
+stats/health, per-instance EXP, distinct aggro radii, variant tints, and the
+tint-preserving respawn.
 
 ## Confirmed — Poring sprite presentation
 
 `scenes/monster.tscn` is a reusable monster scene with a `CharacterBody3D` root in the
 `monsters` group and a visual child. Its camera-facing `AnimatedSprite3D` uses the
 one standing frame from the first row of `assets/enemies/poring/poring.png`.
-One instance stands near the player at `(3, 0, -1)` in `scenes/world.tscn`.
+`scenes/world.tscn` hosts two instances: a Poring near the player at `(3, 0, -1)`
+and a green-tinted Poporing at `(0.53, 0, -1)`.
 
 The monster's capsule collision shape blocks the player on physics layer 1.
 `scripts/monster.gd` follows the assigned player through the baked navigation mesh,
@@ -62,6 +78,7 @@ character's projected world position. Its green fill follows the owning characte
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-16 | Confirmed | Monster instances are data-driven by `MonsterDefinition` resources; tint lives on `MeleeCombat.base_modulate` (not `visual.modulate`) so the damage flash preserves it. | Phase D (monster diversity) implementation. |
 | 2026-09-14 | Confirmed | Passive retaliation, separate spawn leash, return home, and death/respawn lifecycle supersede radius-based disengagement. | Owner's approval of the next monster behavior loop. |
 | 2026-09-14 | Proposed | Leash 10 units, respawn 5 seconds, return immunity/full heal, three-second blocked return recovery, and death fade are prototype defaults. | Implementation choices. |
 | 2026-09-14 | Confirmed | Add configurable aggression and aggro radius; aggressive monsters engage players entering the radius. | Owner's aggro request. |

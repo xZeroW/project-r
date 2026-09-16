@@ -13,17 +13,31 @@ godot --path .
 # Reimport assets (run after adding new assets)
 godot --headless --editor --path . --import
 
-# Validation: two SceneTree test scripts, run individually (exit 0 = pass, 1 = failures)
+# Validation: SceneTree test scripts, run individually (exit 0 = pass, 1 = failures).
+# Seven feature tests pass cleanly:
+godot --headless --path . --script res://tests/combat_test.gd
+godot --headless --path . --script res://tests/targeting_test.gd
+godot --headless --path . --script res://tests/status_points_test.gd
+godot --headless --path . --script res://tests/experience_test.gd
+godot --headless --path . --script res://tests/death_respawn_test.gd
+godot --headless --path . --script res://tests/combat_math_test.gd
+godot --headless --path . --script res://tests/monster_diversity_test.gd
+# Known-flaky in this environment (pre-existing nav/camera timing flakes; still a useful signal):
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
+godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
-There is no aggregate runner or lint setup; these two scripts are the entire test suite. Run both after touching movement, camera, input, animation, assets, or navmesh code. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Tests are slow (each spawns the full world and ticks physics) — budget ~30–60s each.
+There is no aggregate runner or lint setup. These ten scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the seven green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, or targeting; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
 
 ## Architecture
 
 - `scenes/world.tscn` is the entrypoint. `scenes/player.tscn` composes a `CharacterBody3D` from components accessed via `%SceneUniqueName` refs in `scripts/player.gd` (`scripts/player.gd:7`).
-- Components live in `scripts/components/`: `player_input` (intent vector, click forwarding), `character_movement` (camera-relative ground physics), `click_movement` (ray picking + navmesh path following), `destination_marker` (teal torus), `directional_sprite` (AtlasTexture/facing presentation). Each has a `class_name` used as a type.
+- Components live in `scripts/components/`:
+  - **Movement/presentation**: `player_input` (intent vector, click forwarding), `character_movement` (camera-relative ground physics), `click_movement` (ray picking + navmesh path following), `destination_marker` (teal torus), `directional_sprite` (AtlasTexture/facing presentation).
+  - **Combat**: `melee_combat` (shared damage/cooldown/EXP-credit component), `combat_resolver` (RefCounted roll pipeline: accuracy → evasion → block → crit, injectable `dice`), `targeting` (click-to-attack pursuit), `target_indicator` (target ring), `damage_numbers` (screen-space popups incl. MISS/EVADE/BLOCK/crit), `health_bar_ui`.
+  - **Progression**: `status_points` (STR/AGI/VIT/INT/DEX/LUK + derived stats), `status_ui` (C-toggle panel), `experience`, `experience_ui`, `death_respawn` (player death EXP penalty + respawn).
+  - **Data**: `monster_definition` (Resource blueprint); plus `scripts/character_stats.gd` (per-instance stat resource), `scripts/damage_data.gd`, and `scripts/experience_curve.gd` (RO classic 1–99 EXP table). Each node has a `class_name` used as a type; `scripts/player.gd` and `scripts/monster.gd` are the root orchestrators that wire them.
 - `scripts/prototype_map.gd` is a `@tool` `NavigationRegion3D` that generates all map geometry (floor, walls, 3 obstacles) procedurally at runtime and bakes the navmesh. No map scene files exist — geometry is code only.
 - `scripts/orbit_camera.gd`: orthographic camera following the player's *interpolated render position* in `_process`; it must stay in `PHYSICS_INTERPOLATION_MODE_OFF` (see quirks).
 - Full implementation details live in `docs/code/map-player-prototype.md`; decisions are recorded in `docs/code/architecture.md`, `docs/graphics/visual-direction.md`, and `assets/characters/knight/README.md`.

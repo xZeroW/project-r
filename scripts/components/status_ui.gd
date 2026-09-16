@@ -6,6 +6,7 @@ extends CanvasLayer
 
 var _panel: PanelContainer
 var _points_label: Label
+var _derived_label: Label
 var _labels: Dictionary[StatusPoints.Stat, Label] = {}
 var _buttons: Dictionary[StatusPoints.Stat, Button] = {}
 
@@ -50,6 +51,8 @@ func _build_panel() -> void:
 	panel.add_child(column)
 	_points_label = _add_label(column, Color(0.85, 0.9, 1))
 	_points_label.add_theme_font_size_override("font_size", 18)
+	_derived_label = _add_label(column, Color(0.7, 0.85, 0.75))
+	_derived_label.add_theme_font_size_override("font_size", 13)
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
 		column.add_child(_build_stat_row(stat))
 	_panel = panel
@@ -83,6 +86,13 @@ func _add_label(parent: Control, color: Color) -> Label:
 
 func _refresh() -> void:
 	_points_label.text = "STATUS  —  %d points  (C toggle)" % status_points.get_points_remaining()
+	_derived_label.text = "ATK %s  ASPD %s  Acc %s  Crit %s%%  Eva %s" % [
+		"%.1f" % status_points.stats.attack_damage,
+		"%.2f" % status_points.stats.attack_speed,
+		"%.1f" % status_points.stats.acc,
+		"%.1f" % status_points.stats.crit,
+		"%.1f" % status_points.stats.evasion,
+	]
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
 		_labels[stat].text = "%s  %d" % [status_points.stat_name(stat), status_points.get_value(stat)]
 		_buttons[stat].disabled = status_points.get_points_remaining() <= 0

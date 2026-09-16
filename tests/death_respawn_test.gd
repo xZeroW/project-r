@@ -35,6 +35,7 @@ func run() -> void:
 	monster.set_physics_process(false)
 	other.set_physics_process(false)
 	var combat := player.get_node("Combat") as MeleeCombat
+	combat.resolver.dice = func() -> float: return 0.0
 	var death_respawn := player.get_node("DeathRespawn") as DeathRespawn
 	var experience := player.get_node("Experience") as Experience
 	var health_bar := player.get_node("HealthBar") as CanvasLayer
