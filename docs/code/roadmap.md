@@ -62,9 +62,19 @@ formulas (simple prototype defaults):
   independent stats/health, per-instance EXP (stacking into a level), distinct
   aggro radii, tints, and tint-preserving respawn.
 
-## Later (after A & D, sprite work allowed to expand)
+## Priority 3 — Skills & mana, hotbar first (Phase B) — IN PROGRESS
 
-B. Skills & mana (hotbar, bolt+heal, mana costs)
+- `Hotbar` (`scripts/components/hotbar.gd`, `docs/code/hotbar.md`) renders a
+  centered 10-slot bar bound to the 1–0 keys; `hotbar_1`…`hotbar_0` actions live
+  in `project.godot`. Empty slots are dimmed and click-through; keys always emit
+  `slot_activated(index)`. No skills exist yet.
+- `tests/hotbar_test.gd` (green) covers layout, key routing, and slot click
+  semantics.
+- Remaining in Phase B: mana spendable on skills, bolt + heal skills behind the
+  hotbar, and a skill-casting system subscribing to `slot_activated`.
+
+## Later (after A, D & B, sprite work allowed to expand)
+
 C. Items, loot, inventory, equipment
 E. World expansion + NPCs/shops
 F. Job levels/class change
@@ -90,3 +100,4 @@ earlier systems is in scope when a later phase requires it.
 | 2026-09-16 | Confirmed | Evasion reworked into RO's single contested accuracy roll: `hit% = clamp(80 + acc + level mod − evasion, 5, 95)`. DEX and AGI both give 1 point so they cancel 1-for-1 (equal investment ⇒ 80% base), replacing the old 90-base accuracy and flat post-hit dodge that made evaders feel overpowered. Failed rolls read MISS or EVADED (when evasion outscores accuracy). | Owner's AGI balance pass. |
 | 2026-09-15 | Proposed | Prioritize combat-math completion, then monster diversity; sprite work deferred. | Owner's roadmap request. |
 | 2026-09-15 | Proposed | Simple prototype-default formulas over faithful RO mechanics; one feature at a time. | Owner scope choice. |
+| 2026-09-17 | Confirmed | Phase B opens with the hotbar shell: centered 10 slots (1–0), `hotbar_1`…`hotbar_0` actions, empty slots click-through + keys always emit `slot_activated`, filled slots interactive. | Hotbar implementation. |

@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="MonsterDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3 uid="uid://d2qqhbfu5hnvg"]
 
-[ext_resource type="Script" path="res://scripts/components/monster_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://c4n6yowjso7fi" path="res://scripts/components/monster_definition.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
 display_name = &"Poring"
+aggressive = false

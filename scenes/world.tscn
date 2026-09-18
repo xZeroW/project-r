@@ -46,17 +46,18 @@ shadow_color = Color(0, 0, 0, 0.8)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1464311, 0)
 stats = SubResource("Resource_i7141")
 
-[node name="Monster" parent="." unique_id=490114106 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
+[node name="Poring" parent="." unique_id=490114106 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.75133777, -1)
 target = NodePath("../Player")
-target_combat = NodePath("../Player/%Combat")
+target_combat = NodePath("../Player/Combat")
 stats = SubResource("Resource_4mrxx")
 definition = ExtResource("5_def_poring")
+aggressive = false
 
-[node name="Monster2" parent="." unique_id=1245411007 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
+[node name="Poporing" parent="." unique_id=1245411007 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52971506, 0.44423258, -1)
 target = NodePath("../Player")
-target_combat = NodePath("../Player/%Combat")
+target_combat = NodePath("../Player/Combat")
 stats = SubResource("Resource_7r4gi")
 definition = ExtResource("6_def_poporing")
 
@@ -94,5 +95,6 @@ Left click — move to destination · WASD — move / cancel route
 Q / E — rotate camera · Mouse wheel — zoom
 Click monster — approach / auto-attack · WASD / ground click — cancel
 C — status window (spend stat points) · R — restart encounter
+1–0 — hotbar (empty; skills later)
 Death — respawn at spawn · 5% BASE EXP lost"
 label_settings = SubResource("HelpStyle")

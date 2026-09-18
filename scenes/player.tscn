@@ -1,12 +1,5 @@
 [gd_scene format=3 uid="uid://c8lrimb27se4f"]
 
-[ext_resource type="Script" path="res://scripts/components/damage_numbers.gd" id="damage_numbers"]
-[ext_resource type="Script" path="res://scripts/experience_curve.gd" id="experience_curve"]
-[ext_resource type="Script" path="res://scripts/components/experience.gd" id="experience"]
-[ext_resource type="Script" path="res://scripts/components/experience_ui.gd" id="experience_ui"]
-[ext_resource type="Script" path="res://scripts/components/status_points.gd" id="status_points"]
-[ext_resource type="Script" path="res://scripts/components/status_ui.gd" id="status_ui"]
-
 [ext_resource type="Script" uid="uid://bul5s1q5flevc" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" uid="uid://cjbeun4wjnh7j" path="res://scripts/components/player_input.gd" id="2"]
 [ext_resource type="Script" uid="uid://c3anopeq2qeyk" path="res://scripts/components/character_movement.gd" id="3"]
@@ -18,15 +11,19 @@
 [ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="9"]
 [ext_resource type="Script" uid="uid://bd7djw4xpmss4" path="res://scripts/components/health_bar_ui.gd" id="10_health_bar_ui"]
 [ext_resource type="Script" uid="uid://k24y2tiungoi" path="res://scripts/components/melee_combat.gd" id="combat"]
+[ext_resource type="Script" uid="uid://bdrpafha7q2ed" path="res://scripts/components/damage_numbers.gd" id="damage_numbers"]
+[ext_resource type="Script" uid="uid://brj0sumdkn7f2" path="res://scripts/components/death_respawn.gd" id="death_respawn"]
+[ext_resource type="Script" uid="uid://c0f3dstyoqnrl" path="res://scripts/components/experience.gd" id="experience"]
+[ext_resource type="Script" uid="uid://c1u5n75l03myi" path="res://scripts/experience_curve.gd" id="experience_curve"]
+[ext_resource type="Script" uid="uid://bh10kdxm5coht" path="res://scripts/components/experience_ui.gd" id="experience_ui"]
+[ext_resource type="Script" uid="uid://ctvs1bydort3s" path="res://scripts/components/status_points.gd" id="status_points"]
+[ext_resource type="Script" uid="uid://d2417kdpb8iu3" path="res://scripts/components/status_ui.gd" id="status_ui"]
 [ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
-[ext_resource type="Script" path="res://scripts/components/death_respawn.gd" id="death_respawn"]
+[ext_resource type="Script" path="res://scripts/components/hotbar.gd" id="hotbar"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
 script = ExtResource("9")
-
-[sub_resource type="Resource" id="BaseExperienceCurve"]
-script = ExtResource("experience_curve")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ur7pv"]
 radius = 0.5620117
@@ -39,6 +36,9 @@ shader = ExtResource("8")
 [sub_resource type="PlaneMesh" id="ContactShadowMesh"]
 material = SubResource("ContactShadowMaterial")
 size = Vector2(1, 1)
+
+[sub_resource type="Resource" id="BaseExperienceCurve"]
+script = ExtResource("experience_curve")
 
 [sub_resource type="StandardMaterial3D" id="DestinationMaterial"]
 shading_mode = 0
@@ -80,31 +80,36 @@ visual_path = NodePath("../DirectionalSprite")
 unique_name_in_owner = true
 script = ExtResource("targeting")
 
-[node name="Experience" type="Node" parent="."]
+[node name="Experience" type="Node" parent="." unique_id=1963520117]
 unique_name_in_owner = true
 script = ExtResource("experience")
 curve = SubResource("BaseExperienceCurve")
 
-[node name="ExperienceUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("experience")]
+[node name="ExperienceUI" type="CanvasLayer" parent="." unique_id=2121481750 node_paths=PackedStringArray("experience")]
 layer = 10
 script = ExtResource("experience_ui")
 experience = NodePath("../Experience")
 
-[node name="StatusPoints" type="Node" parent="."]
+[node name="StatusPoints" type="Node" parent="." unique_id=1668429292]
 unique_name_in_owner = true
 script = ExtResource("status_points")
 stats = SubResource("PlayerStats")
 
-[node name="StatusUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("status_points")]
+[node name="Hotbar" type="CanvasLayer" parent="." unique_id=1740159308]
+unique_name_in_owner = true
+layer = 15
+script = ExtResource("hotbar")
+
+[node name="StatusUI" type="CanvasLayer" parent="." unique_id=1065664510 node_paths=PackedStringArray("status_points")]
 layer = 20
 script = ExtResource("status_ui")
 status_points = NodePath("../StatusPoints")
 
-[node name="DeathRespawn" type="Node" parent="."]
+[node name="DeathRespawn" type="Node" parent="." unique_id=627859401]
 unique_name_in_owner = true
 script = ExtResource("death_respawn")
 
-[node name="DamageNumbers" type="CanvasLayer" parent="."]
+[node name="DamageNumbers" type="CanvasLayer" parent="." unique_id=1105733891]
 script = ExtResource("damage_numbers")
 world_offset = Vector3(0, 1.2, 0)
 text_color = Color(1, 0.3, 0.25, 1)
