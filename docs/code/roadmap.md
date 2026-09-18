@@ -10,7 +10,7 @@ Movement (WASD/click), camera (orbit/zoom), knight+poring sprites, melee combat
 (click-to-attack, targeting ring, damage numbers, health bars, armour), poring AI
 (aggro/leash/return/death/respawn), player death+respawn with 5% EXP penalty,
 Base leveling (classic RO 1–99 table), status points (STR/AGI/VIT/INT/DEX/LUK →
-derived stats).
+derived stats), hotbar + spell casting (AoE/heal, mana, 1s global cooldown).
 
 ## Deferred — sprite-related (later passes)
 
@@ -62,16 +62,28 @@ formulas (simple prototype defaults):
   independent stats/health, per-instance EXP (stacking into a level), distinct
   aggro radii, tints, and tint-preserving respawn.
 
-## Priority 3 — Skills & mana, hotbar first (Phase B) — IN PROGRESS
+## Priority 3 — Skills & mana, hotbar first (Phase B) — DONE
 
 - `Hotbar` (`scripts/components/hotbar.gd`, `docs/code/hotbar.md`) renders a
   centered 10-slot bar bound to the 1–0 keys; `hotbar_1`…`hotbar_0` actions live
   in `project.godot`. Empty slots are dimmed and click-through; keys always emit
-  `slot_activated(index)`. No skills exist yet.
-- `tests/hotbar_test.gd` (green) covers layout, key routing, and slot click
-  semantics.
-- Remaining in Phase B: mana spendable on skills, bolt + heal skills behind the
-  hotbar, and a skill-casting system subscribing to `slot_activated`.
+  `slot_activated(index)`. Slots hold `SpellDefinition`s and a lock button
+  (default locked) gates rearrangement, which moves/swaps spells between slots.
+- `SpellDefinition` (`scripts/components/spell_definition.gd`,
+  `docs/code/spells-mana.md`) is a data resource with POE-style tags
+  (`AOE`/`HEAL`) and square icons (generated placeholders until art exists).
+  Two spells ship: **AoE Blast** (`aoe_damage`: 25 dmg in a 4.0 radius, tag
+  `AOE`) and **Heal** (`heal`: 25 health, tag `HEAL`).
+- `SpellCaster` (`scripts/components/spell_caster.gd`) owns the spellbook, mana
+  spend, tag-scaled power, and the shared **1s global cooldown**: any cast locks
+  every spell for 1s, and a spell's own longer cooldown continues past it
+  (`remaining = max(gcd, own)`) — drawn as a Ragnarok **pizza-slice shadow** with
+  seconds remaining. Spells execute through `MeleeCombat.take_damage`, sharing
+  aggro, popups, and EXP credit. `player.gd` binds slots 0/1 and wires
+  `slot_activated` → `try_cast`.
+- `tests/hotbar_test.gd` and `tests/spells_test.gd` (both green) cover layout,
+  key/click/lock/rearrange semantics, damage + radius + EXP credit, mana, the
+  global-cooldown matrix, and tag increases.
 
 ## Later (after A, D & B, sprite work allowed to expand)
 
@@ -101,3 +113,6 @@ earlier systems is in scope when a later phase requires it.
 | 2026-09-15 | Proposed | Prioritize combat-math completion, then monster diversity; sprite work deferred. | Owner's roadmap request. |
 | 2026-09-15 | Proposed | Simple prototype-default formulas over faithful RO mechanics; one feature at a time. | Owner scope choice. |
 | 2026-09-17 | Confirmed | Phase B opens with the hotbar shell: centered 10 slots (1–0), `hotbar_1`…`hotbar_0` actions, empty slots click-through + keys always emit `slot_activated`, filled slots interactive. | Hotbar implementation. |
+| 2026-09-17 | Confirmed | Phase B spells: data-driven `SpellDefinition` with POE-style tags + square icons; `SpellCaster` executes AoE (25 dmg / 4.0 radius) and heal (25) through the melee pipeline with mana costs and a shared 1s global cooldown whose per-spell longer cooldowns continue past it. | Owner's Phase B spell brief. |
+| 2026-09-17 | Confirmed | Hotbar slots hold spells and a lock button (default locked) gates drag-rearrangement while locked clicks cast; cooldowns render as a clockwise pizza-slice shadow with remaining seconds. | Owner's hotbar move/cooldown brief. |
+| 2026-09-17 | Confirmed | Repaired seven stale integration tests that still addressed the pre-Phase-D `Monster`/`Monster2` world nodes (they hung before reaching any assertion); they now read `Poring`/`Poporing`. Poring stays passive, so `monster_diversity_test` expects `aggressive = false`. `aggro_test` remains a nav/timing flake. | Phase B verification caught the stale refs. |

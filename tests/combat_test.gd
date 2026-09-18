@@ -14,7 +14,7 @@ func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
+	var monster := world.get_node("Poring") as Monster
 	var player_combat := player.get_node("Combat") as MeleeCombat
 	var enemy_combat := monster.get_node("Combat") as MeleeCombat
 	var force_hit := func() -> float: return 0.0
@@ -63,6 +63,21 @@ func run() -> void:
 	check(player_combat.attack(enemy_combat), "Melee attack against armour must succeed.")
 	check(enemy_combat.stats.current_health == 65.0, "Armour must reduce melee damage.")
 	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "15", "Popup must reflect armour-reduced damage.")
+	# A monster only reacts to damage from within its defense radius (its leash);
+	# hits from beyond it must miss outright instead of being silently ignored.
+	player.global_position = Vector3(10, 2, 0)
+	player.reset_physics_interpolation()
+	enemy_combat.defense_radius = 4.0
+	enemy_combat.invulnerability = 0.0
+	var out_of_range := DamageData.new()
+	out_of_range.amount = 20.0
+	out_of_range.source = player
+	enemy_combat.take_damage(out_of_range, player_combat)
+	check(enemy_combat.stats.current_health == 65.0, "Damage from beyond the defense radius must miss.")
+	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "MISS", "Out-of-range damage must show a MISS popup.")
+	player.global_position = Vector3(0, 2, 0)
+	player.reset_physics_interpolation()
+	enemy_combat.defense_radius = 0.0
 	var data := DamageData.new()
 	data.amount = 1000.0
 	data.source = player

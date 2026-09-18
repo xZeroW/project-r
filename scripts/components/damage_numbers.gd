@@ -3,6 +3,7 @@ extends CanvasLayer
 ## Screen-space feedback anchored to the world location where damage occurred.
 
 @export var combat_path: NodePath = NodePath("../Combat")
+@export var caster_path: NodePath = NodePath("../SpellCaster")
 @export var world_offset: Vector3 = Vector3(0, 1.5, 0)
 @export var text_color: Color = Color(1.0, 0.85, 0.25)
 
@@ -12,6 +13,7 @@ const CRIT_COLOR: Color = Color(1.0, 0.5, 0.1)
 const MISS_COLOR: Color = Color(0.6, 0.6, 0.65)
 const EVADE_COLOR: Color = Color(0.72, 0.72, 0.78)
 const BLOCK_COLOR: Color = Color(0.55, 0.7, 0.9)
+const HEAL_COLOR: Color = Color(0.35, 1.0, 0.45)
 
 class DamageEntry:
 	var label: Label
@@ -22,6 +24,7 @@ class DamageEntry:
 var _popups: Array[DamageEntry] = []
 var _sequence: int = 0
 @onready var _combat: MeleeCombat = get_node(combat_path) as MeleeCombat
+@onready var _caster: SpellCaster = get_node_or_null(caster_path) as SpellCaster
 
 func _ready() -> void:
 	layer = 12
@@ -30,6 +33,8 @@ func _ready() -> void:
 	_combat.missed.connect(_on_missed)
 	_combat.evaded.connect(_on_evaded)
 	_combat.blocked.connect(_on_blocked)
+	if _caster != null:
+		_caster.healed.connect(_on_healed)
 
 func _on_damaged(data: DamageData) -> void:
 	if data.applied_amount <= 0.0:
@@ -45,6 +50,11 @@ func _on_evaded() -> void:
 
 func _on_blocked() -> void:
 	_spawn_popup("BLOCK", BLOCK_COLOR)
+
+func _on_healed(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	_spawn_popup("+" + String.num(amount, 1).trim_suffix(".0"), HEAL_COLOR)
 
 func _spawn_popup(text: String, color: Color) -> void:
 	var popup := DamageEntry.new()

@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://d13q4dd5q6bli" path="res://scripts/character_stats.gd" id="2_71j4m"]
 [ext_resource type="Script" uid="uid://bmyom615rbuc1" path="res://scripts/orbit_camera.gd" id="3"]
 [ext_resource type="PackedScene" uid="uid://cxutb7e8p1vuc" path="res://scenes/monster.tscn" id="4"]
-[ext_resource type="Resource" path="res://resources/monsters/poring.tres" id="5_def_poring"]
+[ext_resource type="Resource" uid="uid://d2qqhbfu5hnvg" path="res://resources/monsters/poring.tres" id="5_def_poring"]
 [ext_resource type="Resource" path="res://resources/monsters/poporing.tres" id="6_def_poporing"]
 
 [sub_resource type="Resource" id="Resource_i7141"]
@@ -95,6 +95,6 @@ Left click — move to destination · WASD — move / cancel route
 Q / E — rotate camera · Mouse wheel — zoom
 Click monster — approach / auto-attack · WASD / ground click — cancel
 C — status window (spend stat points) · R — restart encounter
-1–0 — hotbar (empty; skills later)
+1 — AoE Blast · 2 — Heal · Shift + click a hotbar spell to move it
 Death — respawn at spawn · 5% BASE EXP lost"
 label_settings = SubResource("HelpStyle")

@@ -38,8 +38,8 @@ func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
-	var other := world.get_node("Monster2") as Monster
+	var monster := world.get_node("Poring") as Monster
+	var other := world.get_node("Poporing") as Monster
 	player.set_physics_process(false)
 	monster.set_physics_process(false)
 	other.set_physics_process(false)

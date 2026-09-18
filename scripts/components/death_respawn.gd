@@ -12,7 +12,7 @@ signal respawned
 @onready var stats: CharacterStats = %Combat.stats
 @onready var experience: Experience = %Experience
 @onready var visual: DirectionalSprite = %DirectionalSprite
-@onready var _health_bar: CanvasLayer = %HealthBar
+@onready var _resource_bar: CanvasLayer = %ResourceBar
 @onready var _shadow: MeshInstance3D = %ContactShadow
 
 var _dead: bool = false
@@ -39,7 +39,7 @@ func _on_died() -> void:
 	_dead = true
 	_dead_time = 0.0
 	combat.damage_enabled = false
-	_health_bar.hide()
+	_resource_bar.hide()
 	_shadow.hide()
 	_apply_death_exp_penalty()
 
@@ -54,12 +54,13 @@ func _respawn() -> void:
 	_body.global_position = _spawn_position
 	_body.reset_physics_interpolation()
 	stats.current_health = stats.max_health
+	stats.mana = stats.max_mana
 	combat.damage_enabled = true
 	combat.cooldown = 0.0
 	combat.invulnerability = 0.0
 	(_body.get_node("CollisionShape3D") as CollisionShape3D).set_deferred("disabled", false)
 	combat.visual.modulate = Color.WHITE
 	visual.idle()
-	_health_bar.show()
+	_resource_bar.show()
 	_shadow.show()
 	respawned.emit()

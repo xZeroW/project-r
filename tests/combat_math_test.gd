@@ -97,7 +97,7 @@ func _test_integration() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
+	var monster := world.get_node("Poring") as Monster
 	var player_combat := player.get_node("Combat") as MeleeCombat
 	var enemy_combat := monster.get_node("Combat") as MeleeCombat
 	player.set_physics_process(false)

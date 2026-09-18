@@ -14,7 +14,7 @@ func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
+	var monster := world.get_node("Poring") as Monster
 	var player_combat := player.get_node("Combat") as MeleeCombat
 	var force_hit := func() -> float: return 0.0
 	player_combat.resolver.dice = force_hit

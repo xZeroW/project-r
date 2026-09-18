@@ -29,8 +29,8 @@ func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
-	var other := world.get_node("Monster2") as Monster
+	var monster := world.get_node("Poring") as Monster
+	var other := world.get_node("Poporing") as Monster
 	player.set_physics_process(false)
 	monster.set_physics_process(false)
 	other.set_physics_process(false)
@@ -38,7 +38,7 @@ func run() -> void:
 	combat.resolver.dice = func() -> float: return 0.0
 	var death_respawn := player.get_node("DeathRespawn") as DeathRespawn
 	var experience := player.get_node("Experience") as Experience
-	var health_bar := player.get_node("HealthBar") as CanvasLayer
+	var health_bar := player.get_node("ResourceBar") as CanvasLayer
 	var collision := player.get_node("CollisionShape3D") as CollisionShape3D
 	var spawn_position := player.global_position
 	check(player.stats == combat.stats and combat.stats == health_bar.stats, "Root, combat, and health bar must share one stats instance.")

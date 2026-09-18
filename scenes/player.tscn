@@ -16,10 +16,14 @@
 [ext_resource type="Script" uid="uid://c0f3dstyoqnrl" path="res://scripts/components/experience.gd" id="experience"]
 [ext_resource type="Script" uid="uid://c1u5n75l03myi" path="res://scripts/experience_curve.gd" id="experience_curve"]
 [ext_resource type="Script" uid="uid://bh10kdxm5coht" path="res://scripts/components/experience_ui.gd" id="experience_ui"]
+[ext_resource type="Script" uid="uid://bk0mwqx8pswkw" path="res://scripts/components/hotbar.gd" id="hotbar"]
+[ext_resource type="Resource" path="res://resources/spells/aoe_damage.tres" id="spell_aoe"]
+[ext_resource type="Script" uid="uid://bavu1u6lhx4cu" path="res://scripts/components/spell_caster.gd" id="spell_caster"]
+[ext_resource type="Script" uid="uid://bsg8f3kcgwuu1" path="res://scripts/components/spell_definition.gd" id="spell_definition"]
+[ext_resource type="Resource" path="res://resources/spells/heal.tres" id="spell_heal"]
 [ext_resource type="Script" uid="uid://ctvs1bydort3s" path="res://scripts/components/status_points.gd" id="status_points"]
 [ext_resource type="Script" uid="uid://d2417kdpb8iu3" path="res://scripts/components/status_ui.gd" id="status_ui"]
 [ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
-[ext_resource type="Script" path="res://scripts/components/hotbar.gd" id="hotbar"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -76,6 +80,15 @@ script = ExtResource("combat")
 stats = SubResource("PlayerStats")
 visual_path = NodePath("../DirectionalSprite")
 
+[node name="SpellCaster" type="Node" parent="." unique_id=1779036241 node_paths=PackedStringArray("combat", "targeting", "body")]
+unique_name_in_owner = true
+script = ExtResource("spell_caster")
+stats = SubResource("PlayerStats")
+combat = NodePath("../Combat")
+targeting = NodePath("../Targeting")
+body = NodePath("..")
+spells = Array[ExtResource("spell_definition")]([ExtResource("spell_aoe"), ExtResource("spell_heal")])
+
 [node name="Targeting" type="Node" parent="." unique_id=506893315]
 unique_name_in_owner = true
 script = ExtResource("targeting")
@@ -95,10 +108,11 @@ unique_name_in_owner = true
 script = ExtResource("status_points")
 stats = SubResource("PlayerStats")
 
-[node name="Hotbar" type="CanvasLayer" parent="." unique_id=1740159308]
+[node name="Hotbar" type="CanvasLayer" parent="." unique_id=1740159308 node_paths=PackedStringArray("caster")]
 unique_name_in_owner = true
 layer = 15
 script = ExtResource("hotbar")
+caster = NodePath("../SpellCaster")
 
 [node name="StatusUI" type="CanvasLayer" parent="." unique_id=1065664510 node_paths=PackedStringArray("status_points")]
 layer = 20
@@ -145,7 +159,7 @@ animation = &"idle_south"
 autoplay = "idle_south"
 script = ExtResource("4")
 
-[node name="HealthBar" type="CanvasLayer" parent="." unique_id=385136428]
+[node name="ResourceBar" type="CanvasLayer" parent="." unique_id=385136428]
 unique_name_in_owner = true
 layer = 10
 script = ExtResource("10_health_bar_ui")
@@ -153,7 +167,7 @@ stats = SubResource("PlayerStats")
 target_path = NodePath("..")
 world_offset = Vector3(0, -1.2, 0)
 
-[node name="Bar" type="Control" parent="HealthBar" unique_id=385136429]
+[node name="HealthBar" type="Control" parent="ResourceBar" unique_id=385136429]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
@@ -161,14 +175,14 @@ offset_right = 64.0
 offset_bottom = 8.0
 mouse_filter = 2
 
-[node name="Background" type="ColorRect" parent="HealthBar/Bar" unique_id=385136430]
+[node name="Background" type="ColorRect" parent="ResourceBar/HealthBar" unique_id=385136430]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 8.0
 mouse_filter = 2
 color = Color(0.03, 0.03, 0.03, 1)
 
-[node name="Fill" type="ColorRect" parent="HealthBar/Bar" unique_id=385136431]
+[node name="Fill" type="ColorRect" parent="ResourceBar/HealthBar" unique_id=385136431]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 2.0
@@ -177,3 +191,29 @@ offset_right = 62.0
 offset_bottom = 6.0
 mouse_filter = 2
 color = Color(0.1, 0.85, 0.2, 1)
+
+[node name="ManaBar" type="Control" parent="ResourceBar" unique_id=385136432]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_top = 6.0
+offset_right = 64.0
+offset_bottom = 14.0
+mouse_filter = 2
+
+[node name="ManaBackground" type="ColorRect" parent="ResourceBar/ManaBar" unique_id=385136433]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.03, 0.03, 0.03, 1)
+
+[node name="ManaFill" type="ColorRect" parent="ResourceBar/ManaBar" unique_id=385136434]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 62.0
+offset_bottom = 6.0
+mouse_filter = 2
+color = Color(0.15, 0.45, 0.95, 1)

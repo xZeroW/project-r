@@ -14,7 +14,7 @@ func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
 	var player := world.get_node("Player") as CharacterBody3D
-	var monster := world.get_node("Monster") as Monster
+	var monster := world.get_node("Poring") as Monster
 	var targeting := player.get_node("Targeting") as Targeting
 	var clicks := player.get_node("ClickMovement") as ClickMovement
 	var combat := player.get_node("Combat") as MeleeCombat

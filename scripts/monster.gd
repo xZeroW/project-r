@@ -38,6 +38,7 @@ func _ready() -> void:
 	if definition != null:
 		_apply_definition()
 	combat.stats = stats
+	combat.defense_radius = leash_distance
 	_spawn_position = global_position
 	combat.damaged.connect(_on_damaged)
 	combat.died.connect(_on_died)

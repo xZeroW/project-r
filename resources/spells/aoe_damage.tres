@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/spell_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"aoe_damage"
+display_name = "AoE Blast"
+description = "Explodes at the target (or at the caster), damaging every monster in a radius."
+behavior = 0
+tags = Array[int]([0])
+icon_color = Color(0.3, 0.55, 1, 1)
+power = 25.0
+radius = 4.0
+mana_cost = 10.0
+cooldown = 3.0

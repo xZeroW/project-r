@@ -8,6 +8,8 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @onready var combat: MeleeCombat = %Combat
 @onready var targeting: Targeting = %Targeting
 @onready var experience: Experience = %Experience
+@onready var spell_caster: SpellCaster = %SpellCaster
+@onready var hotbar: Hotbar = %Hotbar
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
@@ -39,6 +41,14 @@ func _ready() -> void:
 	click_movement.destination_cleared.connect(destination_marker.clear_destination)
 	click_movement.enemy_selected.connect(targeting.select)
 	click_movement.destination_changed.connect(func(_position: Vector3) -> void: targeting.cancel())
+	hotbar.slot_activated.connect(_on_hotbar_slot)
+	hotbar.bind_spell(0, spell_caster.get_spell(&"aoe_damage"))
+	hotbar.bind_spell(1, spell_caster.get_spell(&"heal"))
+
+func _on_hotbar_slot(index: int) -> void:
+	var spell := hotbar.get_slot_spell(index)
+	if spell != null:
+		spell_caster.try_cast(spell)
 
 func _on_defeated_enemy(enemy: MeleeCombat) -> void:
 	experience.add_experience(enemy.base_experience_reward)

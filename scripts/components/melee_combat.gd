@@ -13,6 +13,10 @@ signal blocked
 @export var reach: float = 1.8
 @export var visual_path: NodePath
 @export_range(0, 1000000000, 1) var base_experience_reward: int = 0
+## Maximum horizontal distance at which this combatant can be damaged; 0 = no
+## limit. Monsters set this to their leash so sniping from beyond the range they
+## react to misses instead of being silently ignored.
+@export_range(0.0, 100.0, 0.1) var defense_radius: float = 0.0
 
 @onready var body: CharacterBody3D = get_parent() as CharacterBody3D
 @onready var visual: AnimatedSprite3D = get_node(visual_path) as AnimatedSprite3D
@@ -59,6 +63,11 @@ func attack(other: MeleeCombat) -> bool:
 func take_damage(data: DamageData, attacker: MeleeCombat) -> void:
 	if not damage_enabled or stats.current_health <= 0.0 or invulnerability > 0.0 or data.amount <= 0.0:
 		return
+	if attacker != null and defense_radius > 0.0:
+		var offset := attacker.body.global_position - body.global_position
+		if Vector2(offset.x, offset.z).length() > defense_radius:
+			missed.emit()
+			return
 	var result := resolver.resolve_incoming(attacker.stats if attacker != null else null, stats)
 	match result.kind:
 		CombatResolver.ResultKind.MISS:

@@ -12,8 +12,9 @@ assigned, `_ready` derives the monster's stats, `MeleeCombat` EXP reward, the
 behavior settings below, and its presentation tint from that definition; when it
 is absent the scene's default `stats` and exports apply. Monster definitions
 live in `resources/monsters/*.tres` (`Poring`: Lv 1, 100 HP, 10 damage, 2 EXP,
-white; `Poporing`: Lv 2, 180 HP, 16 damage, 8 EXP, wider aggro/leash, green tint —
-no new art). The Inspector exposes:
+white, **passive** (`aggressive = false`); `Poporing`: Lv 2, 180 HP, 16 damage,
+8 EXP, aggressive with wider aggro/leash, green tint — no new art). The Inspector
+exposes:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -31,6 +32,9 @@ variant color (`visual.modulate` never hard-codes white).
 Passive monsters remain idle until the assigned player hits them. A valid hit starts
 engagement regardless of aggression, provided the attacker is inside the spawn leash.
 Changing aggression or leaving the aggro radius does not cancel an existing engagement.
+Monsters only accept damage within their spawn leash (`MeleeCombat.defense_radius` is
+set to `leash_distance`); an attack delivered from beyond that radius is a clean MISS,
+so ranged/AoE hits cannot chip an unreacting idle monster from off-screen.
 Crossing the spawn leash, losing the target, or target death cancels windup and starts
 returning home. Return navigation refreshes at most five times per second. Returning
 monsters cannot attack, receive damage, or be selected. Arrival restores full health
@@ -79,6 +83,8 @@ character's projected world position. Its green fill follows the owning characte
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
 | 2026-09-16 | Confirmed | Monster instances are data-driven by `MonsterDefinition` resources; tint lives on `MeleeCombat.base_modulate` (not `visual.modulate`) so the damage flash preserves it. | Phase D (monster diversity) implementation. |
+| 2026-09-17 | Confirmed | Poring is intentionally passive (`aggressive = false`, retaining the 6/10 default radii); only Poporing acquires targets by proximity. `monster_diversity_test` was aligned to expect the passive Poring, and its world node refs (plus seven other tests') were repaired from the stale pre-Phase-D `Monster`/`Monster2` names to `Poring`/`Poporing`. | Owner's passive-Poring decision during Phase B verification. |
+| 2026-09-17 | Confirmed | Monsters only take damage from attackers inside their spawn leash; beyond it, the hit is a MISS (via `MeleeCombat.defense_radius = leash_distance`) instead of being silently ignored. | Owner's "damaged outside follow range and does nothing" report. |
 | 2026-09-14 | Confirmed | Passive retaliation, separate spawn leash, return home, and death/respawn lifecycle supersede radius-based disengagement. | Owner's approval of the next monster behavior loop. |
 | 2026-09-14 | Proposed | Leash 10 units, respawn 5 seconds, return immunity/full heal, three-second blocked return recovery, and death fade are prototype defaults. | Implementation choices. |
 | 2026-09-14 | Confirmed | Add configurable aggression and aggro radius; aggressive monsters engage players entering the radius. | Owner's aggro request. |

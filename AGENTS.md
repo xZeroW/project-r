@@ -14,7 +14,7 @@ godot --path .
 godot --headless --editor --path . --import
 
 # Validation: SceneTree test scripts, run individually (exit 0 = pass, 1 = failures).
-# Seven feature tests pass cleanly:
+# Nine feature tests pass cleanly:
 godot --headless --path . --script res://tests/combat_test.gd
 godot --headless --path . --script res://tests/targeting_test.gd
 godot --headless --path . --script res://tests/status_points_test.gd
@@ -22,13 +22,15 @@ godot --headless --path . --script res://tests/experience_test.gd
 godot --headless --path . --script res://tests/death_respawn_test.gd
 godot --headless --path . --script res://tests/combat_math_test.gd
 godot --headless --path . --script res://tests/monster_diversity_test.gd
+godot --headless --path . --script res://tests/hotbar_test.gd
+godot --headless --path . --script res://tests/spells_test.gd
 # Known-flaky in this environment (pre-existing nav/camera timing flakes; still a useful signal):
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
 godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
-There is no aggregate runner or lint setup. These ten scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the seven green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, or targeting; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
+There is no aggregate runner or lint setup. These twelve scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the nine green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, targeting, spells, or the hotbar; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
 
 ## Architecture
 
@@ -37,7 +39,7 @@ There is no aggregate runner or lint setup. These ten scripts are the entire tes
   - **Movement/presentation**: `player_input` (intent vector, click forwarding), `character_movement` (camera-relative ground physics), `click_movement` (ray picking + navmesh path following), `destination_marker` (teal torus), `directional_sprite` (AtlasTexture/facing presentation).
   - **Combat**: `melee_combat` (shared damage/cooldown/EXP-credit component), `combat_resolver` (RefCounted RO-contested roll: hit% = clamp(95 + acc + level mod − evasion, 5%, 95%) → block → crit, injectable `dice`), `targeting` (click-to-attack pursuit), `target_indicator` (target ring), `damage_numbers` (screen-space popups incl. MISS/EVADE/BLOCK/crit), `health_bar_ui`.
   - **Progression**: `status_points` (STR/AGI/VIT/INT/DEX/LUK + derived stats), `status_ui` (C-toggle panel), `experience`, `experience_ui`, `death_respawn` (player death EXP penalty + respawn).
-  - **Hotbar (Phase B shell)**: `hotbar` (centered 10 slots bound to 1–0; `hotbar_1`…`hotbar_0` actions; empty slots dimmed + click-through, keys always emit `slot_activated(index)`, filled slots stop clicks).
+  - **Skills (Phase B)**: `hotbar` (centered 10 slots bound to 1–0; `hotbar_1`…`hotbar_0` actions; slots hold `SpellDefinition`s; a plain click casts, Shift+click or Shift+drag rearranges spells between slots with a cursor-following ghost — move to empty, swap onto filled, off-bar cancels; hotbar keys always emit `slot_activated(index)`, empty slots click-through, cooldown pizza-slice shadow), `hotbar_slot` (custom-drawn slot: square icon + key badge + pie), `spell_definition` (Resource: POE-style tags, square icons), `spell_caster` (spellbook, mana, tag-scaled power, 1s global cooldown with per-spell longer cooldowns, AoE/heal effects). See `docs/code/hotbar.md` and `docs/code/spells-mana.md`.
   - **Data**: `monster_definition` (Resource blueprint); plus `scripts/character_stats.gd` (per-instance stat resource), `scripts/damage_data.gd`, and `scripts/experience_curve.gd` (RO classic 1–99 EXP table). Each node has a `class_name` used as a type; `scripts/player.gd` and `scripts/monster.gd` are the root orchestrators that wire them.
 - `scripts/prototype_map.gd` is a `@tool` `NavigationRegion3D` that generates all map geometry (floor, walls, 3 obstacles) procedurally at runtime and bakes the navmesh. No map scene files exist — geometry is code only.
 - `scripts/orbit_camera.gd`: orthographic camera following the player's *interpolated render position* in `_process`; it must stay in `PHYSICS_INTERPOLATION_MODE_OFF` (see quirks).
@@ -53,6 +55,7 @@ There is no aggregate runner or lint setup. These ten scripts are the entire tes
 - **Navmesh bake race**: the runtime bake is deferred (`_start_navmesh_bake.call_deferred()`) and runs synchronously via `bake_navigation_mesh(false)`. Baking in `_ready`, or async on a worker thread, can silently publish an empty mesh. Tests poll for map sync + valid closest-point owner before relying on paths.
 - **Click-to-move**: the screen ray is captured at click time but the physics query is deferred to the next physics tick; it filters layer 1, skips the player, and only accepts hits in the `walkable_ground` group that validate against the baked navmesh (0.75 horizontal / 0.75 vertical tolerance; the baked surface floats ~0.5 above the floor). WASD cancels any active route. Route times out (1s zero motion) instead of grinding.
 - **Tests** extend `SceneTree` and inject mouse/scroll via `root.push_input(event, true)` (not `Input.action_press`), and assert against `physical_keycode` bindings. Keep that pattern when writing new integration checks.
+- **Headless timing is unreliable**: process-time waits (`create_timer`, `await process_frame` counts) can fire early when heavy scenes run, and `await physics_frame` is not real-time (physics runs as fast as it can). For time-dependent assertions, drive the ticking method with an explicit delta (`spell_caster._process(seconds)`, `melee_combat._physics_process(seconds)`) rather than sleeping. Also note `MeleeCombat.take_damage` grants 0.15s of invulnerability per hit, so back-to-back damage on one target is rejected unless those i-frames are advanced.
 - `docs/` files use a status front-matter (`confirmed` / `proposed` / `open`) and a decision-history table. Record new architecture/gfx decisions there rather than only in commit messages.
 
 ## Non-game code to ignore

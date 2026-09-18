@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/components/spell_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"heal"
+display_name = "Heal"
+description = "Restores the caster's health."
+behavior = 1
+tags = Array[int]([1])
+icon_color = Color(0.2, 0.9, 0.4, 1)
+power = 25.0
+mana_cost = 10.0
+cooldown = 1.0

@@ -13,8 +13,8 @@ func check(condition: bool, message: String) -> void:
 func run() -> void:
 	var world := (load("res://scenes/world.tscn") as PackedScene).instantiate()
 	root.add_child(world)
-	var poring := world.get_node("Monster") as Monster
-	var poporing := world.get_node("Monster2") as Monster
+	var poring := world.get_node("Poring") as Monster
+	var poporing := world.get_node("Poporing") as Monster
 	var player := world.get_node("Player") as CharacterBody3D
 	var player_combat := player.get_node("Combat") as MeleeCombat
 	var experience := player.get_node("Experience") as Experience
@@ -35,7 +35,7 @@ func run() -> void:
 	# Per-instance EXP rewards and behavior settings.
 	check(poring.combat.base_experience_reward == 2, "Poring must reward its definition EXP.")
 	check(poporing.combat.base_experience_reward == 8, "Poporing must reward its definition EXP.")
-	check(poring.aggressive and poring.aggro_radius == 6.0 and poring.leash_distance == 10.0, "Poring must use its definition aggro/leash settings.")
+	check(not poring.aggressive and poring.aggro_radius == 6.0 and poring.leash_distance == 10.0, "Poring must read its passive definition aggro/leash settings.")
 	check(poporing.aggressive and poporing.aggro_radius == 7.0 and poporing.leash_distance == 12.0, "Poporing must use its definition aggro/leash settings.")
 	# Presentation tint differs per variant; it lives on MeleeCombat.base_modulate
 	# so the damage flash on visual.modulate restores it instead of erasing it.
