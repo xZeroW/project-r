@@ -60,15 +60,22 @@ executes, and starts cooldowns. `can_cast(spell)` mirrors the gate.
 
 ### POE-style tag increases
 
+Damaging spells first calculate `base_power = power + magic_attack *
+magic_attack_coefficient`. The coefficient is authored per spell (default 1.0;
+zero opts out), and INT derives the caster's MATK using the classic RO range
+midpoint (see `status-points.md`). Healing uses `power` directly. Tooltips show
+base damage and the MATK coefficient rather than presenting base damage as the
+final result.
+
 `add_increase(tag, percent)` accumulates a percentage per tag on that caster.
 Skills can carry multiple tags. `get_total_power(spell)` sums all matching
-increases, then calculates `spell.power * max(0, 1 + total_increase/100)`.
+increases, then calculates `base_power * max(0, 1 + total_increase/100)`.
 These are additive **increased** bonuses, not multiplicative **more** modifiers.
 Duplicate tags count once; tag order does not matter. Definition power is never
 mutated, and bonuses on one caster do not affect another.
 
 For example, simulated sources granting +20% fire, +10% fire, and +30% AoE give
-a 25-power `AOE / FIRE` skill 40 damage (+60%). A fire-only skill receives +30%,
+a 25-power `AOE / FIRE` skill at zero MATK 40 damage (+60%). A fire-only skill receives +30%,
 an AoE-only skill receives +30%, and an untagged skill receives neither bonus.
 Pass the opposite percentage to undo a source's contribution. Items are not
 implemented; tests inject these bonuses directly through `add_increase`.
@@ -113,6 +120,9 @@ the global cooldown, the AoE's own 3s cooldown continuing after the global one
 clears, the pie fraction, mana denial, and POE tag scaling. Simulated bonuses
 cover multiple sources and tags, unmatched skills, duplicate/reordered tags,
 caster isolation, bonus removal, nonnegative power, and actual scaled cast damage.
+INT integration also covers real status allocation, per-skill MATK coefficients,
+repeat recomputation, healing isolation, and a 66-damage cast from 25 base power,
+30 MATK (20 INT), and +20% fire damage.
 
 Because headless process-time pacing is erratic in this environment (real-time
 timers can fire early), the cooldown/i-frame assertions drive
@@ -125,6 +135,7 @@ Shift-click/Shift-drag rearrangement.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-19 | Confirmed | Damaging spells add INT-derived MATK times a per-skill coefficient before matching tag increases; healing keeps separate power scaling. | Owner's approval of RO-style base magic attack plus PoE-style specialization. |
 | 2026-09-19 | Confirmed | Multiple skill tags match caster-local percentage increases; matching increases add before scaling base power. Add FIRE support and verify simulated equipment bonuses without an item system. | Owner's skill-tag review and PoE-style fire-bonus request. |
 | 2026-09-17 | Confirmed | Spells are data-driven `SpellDefinition` resources with POE-style tags; `SpellCaster` executes them through the melee pipeline. AoE (25 dmg / 4.0 radius) and heal (25) ship first. | Owner's Phase B spell brief. |
 | 2026-09-17 | Confirmed | One 1s global cooldown on every cast; each spell's own longer cooldown continues past it (`remaining = max(gcd, own)`), shown as a Ragnarok pizza-slice shadow. | Owner's hotbar cooldown brief. |

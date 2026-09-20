@@ -76,6 +76,15 @@ var _attack_damage: float = 20.0
 		_attack_damage = value
 		stat_changed.emit(&"attack_damage")
 
+## Deterministic midpoint of classic RO's INT-derived MATK range.
+var _magic_attack: float = 0.0
+@export var magic_attack: float:
+	get:
+		return _magic_attack
+	set(value):
+		_magic_attack = maxf(0.0, value)
+		stat_changed.emit(&"magic_attack")
+
 var _armour: float = 0.0
 @export var armour: float:
 	get:

@@ -21,6 +21,8 @@ enum Behavior { AREA_DAMAGE, HEAL }
 @export var icon_color: Color = Color.WHITE
 ## Base magnitude: damage for AREA_DAMAGE, healing for HEAL.
 @export var power: float = 20.0
+## AREA_DAMAGE: added MATK per point before tag increases. Zero opts out.
+@export_range(0.0, 10.0, 0.1) var magic_attack_coefficient: float = 1.0
 ## AREA_DAMAGE only: horizontal radius around the cast point.
 @export var radius: float = 4.0
 @export var mana_cost: float = 10.0
@@ -54,6 +56,8 @@ func get_icon() -> Texture2D:
 
 func hotbar_tooltip() -> String:
 	var effect := "%.0f dmg in %.1f-unit radius" % [power, radius] if behavior == Behavior.AREA_DAMAGE else "Restores %.0f health" % power
+	if behavior == Behavior.AREA_DAMAGE:
+		effect = "%.0f base + %.0f%% MATK dmg in %.1f-unit radius" % [power, magic_attack_coefficient * 100.0, radius]
 	var meta := "%.0f MP · %.1fs cd  (%s)" % [mana_cost, cooldown, tag_label()]
 	return "%s\n%s\n%s" % [display_name, meta, effect]
 

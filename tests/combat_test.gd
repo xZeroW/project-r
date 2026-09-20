@@ -86,6 +86,21 @@ func run() -> void:
 	check(enemy_combat.stats.current_health == 0.0, "Lethal damage must clamp health to zero.")
 	check((enemy_numbers.get_child(enemy_numbers.get_child_count() - 1) as Label).text == "65", "Lethal popup must show actual remaining health lost.")
 	check(not enemy_combat.attack(player_combat), "Dead actors cannot attack.")
+	# A real STR allocation must flow through attack damage and armour resolution.
+	var points := player.get_node("StatusPoints") as StatusPoints
+	points.grant_level_up_points()
+	points.grant_level_up_points()
+	for _point: int in range(10):
+		check(points.allocate(StatusPoints.Stat.STR), "STR fixture must spend real points.")
+	var target := MeleeCombat.new()
+	target.stats = CharacterStats.new()
+	target.stats.armour = 5.0
+	target.body = monster
+	target.resolver = enemy_combat.resolver
+	player_combat.cooldown = 0.0
+	check(player_combat.attack(target), "STR-scaled melee attack must succeed.")
+	check(is_equal_approx(target.stats.current_health, 72.5), "10 STR must deal 32.5 physical attack minus 5 armour = 27.5 damage.")
+	target.free()
 	await process_frame
 	check((monster.get_node("CollisionShape3D") as CollisionShape3D).disabled, "Death must disable collision.")
 	enemy_numbers._process(1.0)

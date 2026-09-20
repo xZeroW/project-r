@@ -36,7 +36,10 @@ func get_total_power(spell: SpellDefinition) -> float:
 	for tag: int in _increases:
 		if tag in spell.tags:
 			increase += _increases[tag]
-	return spell.power * maxf(0.0, 1.0 + increase / 100.0)
+	var base_power := spell.power
+	if spell.behavior == SpellDefinition.Behavior.AREA_DAMAGE:
+		base_power += stats.magic_attack * spell.magic_attack_coefficient
+	return base_power * maxf(0.0, 1.0 + increase / 100.0)
 
 func get_spell(id: StringName) -> SpellDefinition:
 	for spell: SpellDefinition in spells:

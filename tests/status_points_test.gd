@@ -59,6 +59,7 @@ func run() -> void:
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
 		check(points.get_value(stat) == 0, "All six base stats must start at 0.")
 	check(stats.attack_damage == 20.0, "Zero STR must yield the 20 base attack damage.")
+	check(is_zero_approx(stats.magic_attack), "Zero INT must yield zero bonus MATK.")
 	check(is_equal_approx(stats.attack_speed, 1.0) and stats.evasion == 0.0, "Zero AGI must yield base attack speed and no evasion.")
 	check(stats.max_health == 100.0 and stats.max_mana == 100.0, "Zero VIT/INT must yield base 100 max health/mana.")
 	check(stats.current_health == 100.0 and stats.mana == 100.0, "Spawn must match current values to the base max.")
@@ -69,7 +70,8 @@ func run() -> void:
 	check(points.get_points_remaining() == 5, "A level-up grant must add 5 points.")
 	check(points.allocate(StatusPoints.Stat.STR), "Allocation must succeed while points remain.")
 	check(points.get_value(StatusPoints.Stat.STR) == 1 and points.get_points_remaining() == 4, "STR allocation must spend one point.")
-	check(stats.attack_damage == 22.0, "Each STR point must add 2 attack damage.")
+	check(stats.attack_damage == 21.0, "One STR must grant one attack damage before threshold bonuses.")
+	check(ui._derived_label.text.contains("ATK 21.0"), "The panel must show STR-derived attack damage.")
 	check(points.allocate(StatusPoints.Stat.AGI) and absf(stats.attack_speed - 1.05851) < 0.0005 and stats.evasion == 1.0, "Each AGI point must grow ET attack speed and add 1 evasion.")
 
 	stats.current_health = 50.0
@@ -78,9 +80,11 @@ func run() -> void:
 	stats.mana = 60.0
 	check(points.allocate(StatusPoints.Stat.INT) and stats.max_mana == 105.0, "Each INT point must raise max mana by 5.")
 	check(stats.mana == 65.0, "INT must raise current mana by the same delta.")
+	check(is_equal_approx(stats.magic_attack, 1.0), "One INT must grant one MATK.")
+	check(ui._derived_label.text.contains("MATK 1.0"), "The status panel must show updated MATK after allocation.")
 
 	check(points.allocate(StatusPoints.Stat.DEX) and stats.acc == 1.0, "Each DEX point must add 1 accuracy (RO parity).")
-	check(stats.attack_damage == 22.0 and stats.max_health == 110.0, "DEX must not change damage or health.")
+	check(stats.attack_damage == 21.0 and stats.max_health == 110.0, "DEX must not change damage or health.")
 	check(points.get_points_remaining() == 0, "Spending the last point must reach zero.")
 
 	var damage_before := stats.attack_damage
@@ -146,6 +150,29 @@ func run() -> void:
 		check(curve_points.allocate(StatusPoints.Stat.AGI), "The curve grant must fund each AGI point to the cap.")
 	check(absf(curve_stats.attack_speed - 2.22253) < 0.0005, "Full ET AGI must plateau at the expected square-root value.")
 	check(_et_marginal_gain(1, 10) > _et_marginal_gain(90, 99), "Attack speed gain per AGI must diminish as AGI grows.")
+	var matk_changed: Array[StringName] = []
+	curve_stats.stat_changed.connect(func(property: StringName) -> void: matk_changed.append(property))
+	var matk_examples: Dictionary[int, float] = {4: 4.0, 5: 5.5, 6: 6.5, 7: 8.0, 20: 30.0, 50: 124.5, 80: 268.5}
+	for intelligence: int in matk_examples:
+		while curve_points.get_value(StatusPoints.Stat.INT) < intelligence:
+			if curve_points.get_points_remaining() == 0:
+				curve_points.grant_level_up_points()
+			curve_points.allocate(StatusPoints.Stat.INT)
+		check(is_equal_approx(curve_stats.magic_attack, matk_examples[intelligence]), "MATK must follow the classic midpoint at INT %d." % intelligence)
+	check(matk_changed.has(&"magic_attack"), "MATK changes must emit the shared stat notification.")
+	var strength_examples: Dictionary[int, float] = {1: 21.0, 4: 24.0, 5: 25.5, 6: 26.5, 7: 28.0, 10: 32.5, 20: 50.0, 50: 144.5, 80: 288.5, 99: 397.5}
+	for strength: int in strength_examples:
+		while curve_points.get_value(StatusPoints.Stat.STR) < strength:
+			if curve_points.get_points_remaining() == 0:
+				curve_points.grant_level_up_points()
+			curve_points.allocate(StatusPoints.Stat.STR)
+		check(is_equal_approx(curve_stats.attack_damage, strength_examples[strength]), "STR physical attack must follow the shared midpoint curve at %d STR." % strength)
+		if strength == 80:
+			check(is_equal_approx(curve_stats.attack_damage - StatusPoints.BASE_ATTACK_DAMAGE, curve_stats.magic_attack), "Equal STR and INT must contribute equal physical and magical power.")
+	curve_points.recompute()
+	curve_points.recompute()
+	check(is_equal_approx(curve_stats.attack_damage, 397.5), "Recomputation must not accumulate STR bonuses.")
+	check(is_equal_approx(curve_stats.magic_attack, 268.5), "STR allocation must not alter INT-derived MATK.")
 	curve_actor.queue_free()
 
 	var second_actor := scene.instantiate() as CharacterBody3D
@@ -153,6 +180,8 @@ func run() -> void:
 	await process_frame
 	var second_points := second_actor.get_node("StatusPoints") as StatusPoints
 	check(stats != second_actor.stats, "Two player instances must own separate stats.")
+	check(is_zero_approx(second_actor.stats.magic_attack), "MATK investment must not leak between players.")
+	check(is_equal_approx(second_actor.stats.attack_damage, 20.0), "STR investment must not leak between players.")
 	check(second_points.get_points_remaining() == 0 and second_points.get_value(StatusPoints.Stat.STR) == 0, "The second player must start fresh.")
 	points.allocate(StatusPoints.Stat.STR)
 	check(second_points.get_points_remaining() == 0 and second_points.get_value(StatusPoints.Stat.STR) == 0, "Allocation on one player must not leak to another.")

@@ -14,7 +14,6 @@ const BASE_ATTACK_DAMAGE := 20.0
 const BASE_ATTACK_SPEED := 1.0
 const HEALTH_PER_VIT := 10.0
 const MANA_PER_INT := 5.0
-const DAMAGE_PER_STR := 2.0
 const EVASION_PER_AGI := 1.0
 const BASE_ACC := 0.0
 const ACC_PER_DEX := 1.0
@@ -78,7 +77,7 @@ func allocate(stat: Stat) -> bool:
 	points_remaining_changed.emit(points_remaining)
 	return true
 
-## RO classic: each Base level adds 5 stat points. A fresh spawn has zero points;
+## Prototype rule: each Base level adds 5 stat points. A fresh spawn has zero points;
 ## the first level-up (wired by the player orchestrator) grants the first batch.
 func grant_level_up_points() -> void:
 	points_remaining += BASE_POINTS_PER_LEVEL
@@ -100,6 +99,14 @@ func et_stat_aspd(agi: int) -> float:
 func et_panel_aspd(agi: int) -> float:
 	return 50.0 / (200.0 - et_stat_aspd(agi))
 
+## Shared physical/magical contribution, using the classic INT MATK midpoint.
+## STR feeds physical attack; INT feeds magic attack with identical scaling.
+func attribute_attack_power(value: int) -> float:
+	var attribute := float(value)
+	var minimum_bonus := floorf(attribute / 7.0)
+	var maximum_bonus := floorf(attribute / 5.0)
+	return attribute + (minimum_bonus * minimum_bonus + maximum_bonus * maximum_bonus) / 2.0
+
 ## Pushes derived values into the shared CharacterStats. Accuracy (DEX) and
 ## evasion (AGI) feed the shared combat resolver's single RO-contested roll at
 ## 1 point each, so they cancel 1-for-1; crit (LUK) rolls on landed hits.
@@ -108,7 +115,8 @@ func et_panel_aspd(agi: int) -> float:
 func recompute() -> void:
 	var previous_max_health := stats.max_health
 	var previous_max_mana := stats.max_mana
-	stats.attack_damage = BASE_ATTACK_DAMAGE + DAMAGE_PER_STR * _values[Stat.STR]
+	stats.attack_damage = BASE_ATTACK_DAMAGE + attribute_attack_power(_values[Stat.STR])
+	stats.magic_attack = attribute_attack_power(_values[Stat.INT])
 	stats.attack_speed = BASE_ATTACK_SPEED * et_panel_aspd(_values[Stat.AGI]) / et_panel_aspd(0)
 	stats.evasion = EVASION_PER_AGI * _values[Stat.AGI]
 	stats.acc = BASE_ACC + ACC_PER_DEX * _values[Stat.DEX]

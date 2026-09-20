@@ -99,8 +99,9 @@ func _add_label(parent: Control, color: Color) -> Label:
 
 func _refresh() -> void:
 	_points_label.text = "STATUS  —  %d points  (C toggle)" % status_points.get_points_remaining()
-	_derived_label.text = "ATK %s  ASPD %s  Acc %s  Crit %s%%  Eva %s" % [
+	_derived_label.text = "ATK %s  MATK %s\nASPD %s  Acc %s  Crit %s%%  Eva %s" % [
 		"%.1f" % status_points.stats.attack_damage,
+		"%.1f" % status_points.stats.magic_attack,
 		"%.2f" % status_points.stats.attack_speed,
 		"%.1f" % status_points.stats.acc,
 		"%.1f" % status_points.stats.crit,

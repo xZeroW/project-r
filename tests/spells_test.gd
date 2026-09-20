@@ -73,6 +73,10 @@ func run() -> void:
 	await process_frame
 
 	check(get_nodes_in_group("monsters").size() >= 3, "Monster fixtures must join the monsters group.")
+	# Incoming hit rolls belong to each defender, not the attacking caster.
+	for monster: Node in get_nodes_in_group("monsters"):
+		var defender := monster.get_node("Combat") as MeleeCombat
+		defender.resolver.dice = func() -> float: return 0.0
 
 	# Phase A — hotbar-key wiring, AoE damage, EXP credit, mana, and global cooldown.
 	var spell_cast_count: Array[int] = [0]
@@ -170,6 +174,7 @@ func run() -> void:
 	fire_aoe.tags.reverse()
 	check(is_equal_approx(caster.get_total_power(fire_aoe), 40.0), "Tag order must not affect power.")
 	var other_caster := SpellCaster.new()
+	other_caster.stats = CharacterStats.new()
 	check(is_equal_approx(other_caster.get_total_power(fire_aoe), 25.0), "Bonuses must belong to the caster, not the shared skill.")
 	other_caster.free()
 	caster.spells.append(fire_aoe)
@@ -186,6 +191,32 @@ func run() -> void:
 	check(is_equal_approx(caster.get_total_power(fire_aoe), 25.0), "Removing all matching bonuses must restore base power.")
 	caster.add_increase(SpellDefinition.SpellTag.FIRE, -150.0)
 	check(is_zero_approx(caster.get_total_power(fire_aoe)), "Reductions beyond 100% must not produce negative damage.")
+
+	# INT supplies base magic attack; tag bonuses scale the combined damage.
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, 170.0)
+	var points := player_actor.get_node("StatusPoints") as StatusPoints
+	for _level: int in range(4):
+		points.grant_level_up_points()
+	for _point: int in range(20):
+		check(points.allocate(StatusPoints.Stat.INT), "The INT fixture must spend real status points.")
+	check(is_equal_approx(stats.magic_attack, 30.0), "20 INT must produce 30 midpoint MATK.")
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 66.0), "Fire bonus must scale both 25 base damage and 30 MATK by 20%.")
+	check(is_equal_approx(caster.get_total_power(heal_spell), 37.5), "Healing must retain its separate tag-only scaling.")
+	check(is_equal_approx(stats.attack_damage, 20.0), "INT must not increase physical attack.")
+	fire_aoe.magic_attack_coefficient = 0.5
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 48.0), "Per-skill coefficient must scale MATK before tag bonuses.")
+	fire_aoe.magic_attack_coefficient = 0.0
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 30.0), "Zero coefficient must opt out of MATK scaling.")
+	fire_aoe.magic_attack_coefficient = 1.0
+	points.recompute()
+	points.recompute()
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 66.0), "Recomputing stats must not accumulate MATK or bonuses.")
+	near.stats.current_health = 100.0
+	_advance(caster, 3.0)
+	_tick_mobs(3.0)
+	check(caster.try_cast(fire_aoe), "INT-scaled skill must cast successfully.")
+	check(is_equal_approx(near.stats.current_health, 34.0), "Actual damage must include INT-derived MATK and fire scaling.")
+	check(is_equal_approx(fire_aoe.power, 25.0), "MATK must not mutate the shared skill base power.")
 
 	near.queue_free()
 	far.queue_free()

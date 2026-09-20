@@ -16,7 +16,7 @@ mirrors the existing `Experience` / `ExperienceUI` split.
 - Each player spawns with **0 unspent points**.
 - `StatusPoints.allocate(stat)` spends one point, denies the claim at 0 points,
   and pushes recomputed derived values into the shared `CharacterStats`.
-- On `Experience.leveled_up` the player grants **+5 points** (RO classic),
+- On `Experience.leveled_up` the player grants **+5 points** (prototype rule),
   connected in `player.gd` in addition to the existing HP/mana restore. A fresh
   character stays at 0 points until the first level-up.
 - Allocation is session-local: encounter restart (`R`) or relaunch resets it.
@@ -30,11 +30,12 @@ defaults.
 
 | Base stat | Derived | Formula |
 | --- | --- | --- |
-| STR | attack damage | `20 + 2·STR` |
+| STR | physical attack damage | `20 + STR + (floor(STR / 7)² + floor(STR / 5)²) / 2` — same attribute contribution as INT, plus prototype base damage |
 | AGI | attack speed | Eternal-Love hits/sec curve: `1.0 × panel(AGI) / panel(0)` where `panel(agi) = 50 / (200 − stat_aspd)` and `stat_aspd(agi) = 156 − (√205 − √AGI)/7.15 + √(9.9999·AGI)·0.76`. Square-root returns: 1.0 at 0 AGI, ≈1.21 at 10, ≈2.22 at 99 — the gain per point diminishes as AGI grows. |
 | AGI | evasion | `1·AGI` points contested 1-for-1 against the attacker's accuracy in the RO hit roll |
 | VIT | max health | `100 + 10·VIT` |
-| INT | max mana | `100 + 5·INT` (data-only until mana is spent) |
+| INT | max mana | `100 + 5·INT` |
+| INT | magic attack | `INT + (floor(INT / 7)² + floor(INT / 5)²) / 2`, the deterministic midpoint of classic RO's base MATK range |
 | DEX | accuracy | `1·DEX` points contested 1-for-1 against evasion; `hit% = clamp(95 + acc − evasion, 5%, 95%)` |
 | LUK | crit chance | `0.3·LUK` percent chance on a landed hit for 150% damage |
 
@@ -44,6 +45,22 @@ evasion. Accuracy and evasion resolve together through a single RO-contested
 combat roll (`hit% = clamp(95 + acc − evasion, 5%, 95%)`); crit rolls on landed
 hits; see [Combat prototype](combat-prototype.md). `block` stays at 0 until
 shields exist.
+
+STR and INT use the same `attribute_attack_power(value)` function. STR adds the
+result to the 20 base physical attack; INT supplies the result as MATK.
+Examples: 0 STR → 20 ATK, 10 → 32.5, 20 → 50, 50 → 144.5, 99 → 397.5.
+Equal attribute investment provides equal physical/magical contributions before
+base attack, skill coefficients, and modifiers. This intentionally applies the
+INT midpoint curve to STR rather than reproducing classic RO's physical formula.
+It supersedes both the former +2/STR rule and the short-lived tens-threshold
+curve; it is not a blanket damage reduction at high attributes.
+
+MATK is 0 at zero INT, 30 at 20 INT, and 124.5 at 50 INT. Damaging spells add
+MATK times their own `magic_attack_coefficient` (default 1.0) to base power,
+then apply matching tag increases. Heal retains its separate tag-scaled power.
+This is an RO-inspired deterministic adaptation, not a random MATK roll or a
+full port of RO stat allocation costs. Recomputing replaces MATK rather than
+accumulating it. `CharacterStats.magic_attack` emits `stat_changed` on writes.
 
 ## Confirmed — Health accounting on max growth
 
@@ -59,7 +76,7 @@ to full health and mana (`player.gd`), independent of this delta.
   remaining points. Updates are signal-driven from `StatusPoints`
   (`allocated`, `points_remaining_changed`).
 - A derived line above the stat rows shows the live loadout
-  (`ATK / ASPD / Acc / Crit % / Eva`), refreshed on every allocation so the panel
+  (`ATK / MATK / ASPD / Acc / Crit % / Eva`), refreshed on every allocation so the panel
   mirrors the shared `CharacterStats` values that combat resolves.
 - The panel background uses `MOUSE_FILTER_STOP` so clicks on the panel do not
   leak into click-to-move/combat; buttons consume clicks via normal GUI
@@ -76,6 +93,9 @@ panel click blocking, and per-instance independence.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-19 | Confirmed | STR uses the same midpoint curve as INT, contributing physical attack above the 20 base. Supersedes the STR-specific tens-threshold formula below. | Owner's request for STR to follow INT's logic but give physical damage. |
+| 2026-09-19 | Confirmed | Replace flat +2 ATK/STR with `20 + STR + floor(STR / 10)²`, reducing early STR strength and adding classic RO-style tens thresholds. | Owner's STR balance request following the INT/MATK implementation. |
+| 2026-09-19 | Confirmed | INT supplies base MATK before PoE-style tag bonuses. Prototype uses the midpoint of classic RO's INT MATK range; damaging skills have a tunable MATK coefficient and the status panel displays MATK. | Owner's approval of RO-style magic attack feeding tag-scaled spells; deterministic midpoint is the prototype implementation choice. |
 | 2026-09-16 | Confirmed | Hit-roll base raised from 80 to 95: equal DEX/AGI investment now cancels 1-for-1 to the 95% base (`hit% = clamp(95 + acc − evasion, 5%, 95%)`). | Owner's accuracy-base request. |
 | 2026-09-15 | Confirmed | Stat allocation is a composition of `StatusPoints` + `StatusUI`, mirroring Experience. | Project owner's brief. |
 | 2026-09-16 | Confirmed | Fresh players spawn with all base stats at 0 and 0 unspent points (20 ATK / 1.0 ASPD / 0 acc / 100 HP); the first +5 grant arrives on level-up. | Owner's correction to the starting loadout. |
