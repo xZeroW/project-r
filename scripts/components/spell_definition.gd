@@ -5,15 +5,15 @@ extends Resource
 ## spell carrying that tag. Spell icons are authored square and always presented
 ## square by the HotbarSlot so no non-square art can leak in.
 
-enum SpellTag { AOE, HEAL }
+enum SpellTag { AOE, HEAL, FIRE }
 enum Behavior { AREA_DAMAGE, HEAL }
 
 @export var id: StringName = &"spell"
 @export var display_name: String = "Spell"
 @export_multiline var description: String = ""
 @export var behavior: Behavior = Behavior.AREA_DAMAGE
-## POE-style tag list (SpellTag values). The caster scales `power` by 1 + the
-## accumulated increase for every tag a spell carries.
+## POE-style tag list (SpellTag values). The caster adds increases across all
+## matching tags, then scales `power` once. Each tag counts only once.
 @export var tags: Array[int] = []
 ## Square icon texture. When null a square placeholder is generated from
 ## `icon_color` so the slot always has square art to draw.
@@ -41,6 +41,8 @@ func tag_label() -> String:
 				names.append("AOE")
 			int(SpellTag.HEAL):
 				names.append("HEAL")
+			int(SpellTag.FIRE):
+				names.append("FIRE")
 	return " / ".join(names)
 
 func get_icon() -> Texture2D:

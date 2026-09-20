@@ -20,7 +20,7 @@ resources ship in `resources/spells/`:
 | `aoe_damage.tres` | `aoe_damage` | `AREA_DAMAGE` | `AOE` | 25 | 4.0 | 10 | 3.0s |
 | `heal.tres` | `heal` | `HEAL` | `HEAL` | 25 | — | 10 | 1.0s |
 
-- `enum SpellTag { AOE, HEAL }` and `enum Behavior { AREA_DAMAGE, HEAL }`. Tags
+- `enum SpellTag { AOE, HEAL, FIRE }` and `enum Behavior { AREA_DAMAGE, HEAL }`. Tags
   are stored as `Array[int]` and drive POE-style increases: an increase keyed to
   a tag scales every spell carrying that tag.
 - **Icons are square by contract.** `icon` is an optional `Texture2D`; when null
@@ -60,10 +60,23 @@ executes, and starts cooldowns. `can_cast(spell)` mirrors the gate.
 
 ### POE-style tag increases
 
-`add_increase(tag, percent)` accumulates a percentage per tag;
-`get_total_power(spell)` multiplies `spell.power` by `1 + increase/100` for each
-tag the spell carries. Definition power is never mutated. Example: a 100% `AOE`
-increase doubles AoE damage and leaves the heal untouched.
+`add_increase(tag, percent)` accumulates a percentage per tag on that caster.
+Skills can carry multiple tags. `get_total_power(spell)` sums all matching
+increases, then calculates `spell.power * max(0, 1 + total_increase/100)`.
+These are additive **increased** bonuses, not multiplicative **more** modifiers.
+Duplicate tags count once; tag order does not matter. Definition power is never
+mutated, and bonuses on one caster do not affect another.
+
+For example, simulated sources granting +20% fire, +10% fire, and +30% AoE give
+a 25-power `AOE / FIRE` skill 40 damage (+60%). A fire-only skill receives +30%,
+an AoE-only skill receives +30%, and an untagged skill receives neither bonus.
+Pass the opposite percentage to undo a source's contribution. Items are not
+implemented; tests inject these bonuses directly through `add_increase`.
+
+Tags select **power** modifiers in this prototype: `HEAL` scales healing and
+`AOE` scales power, not radius. `FIRE` is a matching tag, not an elemental damage
+or resistance system. The two shipped skills retain their existing tags;
+multi-tag fire skills are test fixtures.
 
 ### Effects
 
@@ -97,7 +110,9 @@ increase doubles AoE damage and leaves the heal untouched.
 wiring, AoE radius (near monster damaged, far untouched), EXP credit on a spell
 kill, mana spend, the 1s global cooldown denying re-casts, every spell entering
 the global cooldown, the AoE's own 3s cooldown continuing after the global one
-clears, the pie fraction, mana denial, and POE tag scaling.
+clears, the pie fraction, mana denial, and POE tag scaling. Simulated bonuses
+cover multiple sources and tags, unmatched skills, duplicate/reordered tags,
+caster isolation, bonus removal, nonnegative power, and actual scaled cast damage.
 
 Because headless process-time pacing is erratic in this environment (real-time
 timers can fire early), the cooldown/i-frame assertions drive
@@ -110,6 +125,7 @@ Shift-click/Shift-drag rearrangement.
 
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
+| 2026-09-19 | Confirmed | Multiple skill tags match caster-local percentage increases; matching increases add before scaling base power. Add FIRE support and verify simulated equipment bonuses without an item system. | Owner's skill-tag review and PoE-style fire-bonus request. |
 | 2026-09-17 | Confirmed | Spells are data-driven `SpellDefinition` resources with POE-style tags; `SpellCaster` executes them through the melee pipeline. AoE (25 dmg / 4.0 radius) and heal (25) ship first. | Owner's Phase B spell brief. |
 | 2026-09-17 | Confirmed | One 1s global cooldown on every cast; each spell's own longer cooldown continues past it (`remaining = max(gcd, own)`), shown as a Ragnarok pizza-slice shadow. | Owner's hotbar cooldown brief. |
 | 2026-09-17 | Confirmed | Spells carry square icons (generated placeholders until art exists) and can be dragged between hotbar slots; a lock button (default locked) blocks rearrangement while still casting on click. | Owner's hotbar brief. |

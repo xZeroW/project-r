@@ -25,15 +25,18 @@ func _ready() -> void:
 	assert(stats != null, "SpellCaster requires character stats.")
 	assert(combat != null, "SpellCaster requires the player's MeleeCombat for spell credit and hit rolls.")
 
-## POE-style tag increase: scales every spell carrying [tag] by percent%.
+## POE-style increased power: bonuses add across sources and matching tags.
+## Pass the opposite percentage to undo a previously added bonus.
 func add_increase(tag: int, percent: float) -> void:
 	_increases[tag] = _increases.get(tag, 0.0) + percent
 
 func get_total_power(spell: SpellDefinition) -> float:
-	var total := spell.power
-	for tag: int in spell.tags:
-		total *= 1.0 + _increases.get(tag, 0.0) / 100.0
-	return total
+	var increase: float = 0.0
+	# Iterate modifier keys so duplicate authored tags cannot double-count.
+	for tag: int in _increases:
+		if tag in spell.tags:
+			increase += _increases[tag]
+	return spell.power * maxf(0.0, 1.0 + increase / 100.0)
 
 func get_spell(id: StringName) -> SpellDefinition:
 	for spell: SpellDefinition in spells:

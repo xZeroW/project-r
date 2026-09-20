@@ -147,6 +147,46 @@ func run() -> void:
 	check(aoe_spell.has_tag(SpellDefinition.SpellTag.AOE) and not aoe_spell.has_tag(SpellDefinition.SpellTag.HEAL), "The AoE spell must carry only the AOE tag.")
 	check(heal_spell.has_tag(SpellDefinition.SpellTag.HEAL) and not heal_spell.has_tag(SpellDefinition.SpellTag.AOE), "The heal must carry only the HEAL tag.")
 
+	# Simulated equipment bonuses on a multi-tag skill; no item system needed.
+	caster.add_increase(SpellDefinition.SpellTag.AOE, -100.0)
+	var fire_aoe := aoe_spell.duplicate(true) as SpellDefinition
+	fire_aoe.tags = [SpellDefinition.SpellTag.AOE, SpellDefinition.SpellTag.FIRE]
+	var fire_only := SpellDefinition.new()
+	fire_only.power = 100.0
+	fire_only.tags = [SpellDefinition.SpellTag.FIRE]
+	var untagged := SpellDefinition.new()
+	untagged.power = 100.0
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, 20.0)
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, 10.0)
+	caster.add_increase(SpellDefinition.SpellTag.AOE, 30.0)
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 40.0), "Two fire sources and an AoE bonus must add to +60%, not multiply.")
+	check(is_equal_approx(caster.get_total_power(fire_only), 130.0), "Every FIRE skill must receive fire bonuses, even without AOE.")
+	check(is_equal_approx(caster.get_total_power(aoe_spell), 32.5), "Non-fire AoE must receive only the AoE bonus.")
+	check(is_equal_approx(caster.get_total_power(heal_spell), 37.5), "Fire and AoE bonuses must not change HEAL power.")
+	check(is_equal_approx(caster.get_total_power(untagged), 100.0), "Untagged skills must ignore tag bonuses.")
+	check(fire_aoe.tag_label() == "AOE / FIRE", "Tooltips must display multiple tags, including FIRE.")
+	fire_aoe.tags.append(SpellDefinition.SpellTag.FIRE)
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 40.0), "Duplicate tags must not apply a bonus twice.")
+	fire_aoe.tags.reverse()
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 40.0), "Tag order must not affect power.")
+	var other_caster := SpellCaster.new()
+	check(is_equal_approx(other_caster.get_total_power(fire_aoe), 25.0), "Bonuses must belong to the caster, not the shared skill.")
+	other_caster.free()
+	caster.spells.append(fire_aoe)
+	_advance(caster, 3.0)
+	_tick_mobs(3.0)
+	var health_before := near.stats.current_health
+	check(caster.try_cast(fire_aoe), "The multi-tag fire skill must cast successfully.")
+	check(is_equal_approx(health_before - near.stats.current_health, 40.0), "An actual cast must deal the tag-scaled 40 damage.")
+	check(is_equal_approx(fire_aoe.power, 25.0), "Simulated bonuses must preserve base skill power.")
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, -20.0)
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 35.0), "Removing one simulated source must preserve the other bonuses.")
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, -10.0)
+	caster.add_increase(SpellDefinition.SpellTag.AOE, -30.0)
+	check(is_equal_approx(caster.get_total_power(fire_aoe), 25.0), "Removing all matching bonuses must restore base power.")
+	caster.add_increase(SpellDefinition.SpellTag.FIRE, -150.0)
+	check(is_zero_approx(caster.get_total_power(fire_aoe)), "Reductions beyond 100% must not produce negative damage.")
+
 	near.queue_free()
 	far.queue_free()
 	weak.queue_free()
