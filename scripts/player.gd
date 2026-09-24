@@ -10,6 +10,7 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @onready var experience: Experience = %Experience
 @onready var spell_caster: SpellCaster = %SpellCaster
 @onready var hotbar: Hotbar = %Hotbar
+@onready var inventory: Inventory = %Inventory
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):

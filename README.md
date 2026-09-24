@@ -24,7 +24,7 @@ Hits reduce the existing health bars, flash red, and disable defeated characters
 Incoming attacks resolve through a combat resolver: stage-one accuracy/MISS, then evasion, block (halves damage), and crit (×1.5); popups show MISS/EVADE/BLOCK.
 See [Combat prototype](docs/code/combat-prototype.md).
 
-Progression: **C** toggles the status window (STR/AGI/VIT/INT/DEX/LUK, +5 points per level; see [Status point allocation](docs/code/status-points.md)). Each Poring awards 2 Base EXP on kill; leveling uses the classic RO 1–99 table (see [Base leveling](docs/code/leveling-system.md)). Player death charges 5% of the current level's Base EXP and respawns at the spawn point (see [Player death and respawn](docs/code/player-respawn.md)). Monsters are data-driven by `MonsterDefinition` resources (`Poring`, green-tinted `Poporing` — see [Monster prototype](docs/code/monster-prototype.md)). The roadmap lives in [docs/code/roadmap.md](docs/code/roadmap.md).
+Progression: **C** toggles the status window (STR/AGI/VIT/INT/DEX/LUK, +5 points per level; see [Status point allocation](docs/code/status-points.md)). **I** toggles the 20-slot inventory; every item consumes one slot and can be dragged to an empty slot or onto another item to swap (see [Inventory](docs/code/inventory.md)). Each Poring awards 2 Base EXP on kill; leveling uses the classic RO 1–99 table (see [Base leveling](docs/code/leveling-system.md)). Player death charges 5% of the current level's Base EXP and respawns at the spawn point (see [Player death and respawn](docs/code/player-respawn.md)). Monsters are data-driven by `MonsterDefinition` resources (`Poring`, green-tinted `Poporing` — see [Monster prototype](docs/code/monster-prototype.md)). The roadmap lives in [docs/code/roadmap.md](docs/code/roadmap.md).
 
 ```sh
 godot --headless --editor --path . --import
@@ -35,13 +35,14 @@ godot --headless --path . --script res://tests/experience_test.gd
 godot --headless --path . --script res://tests/death_respawn_test.gd
 godot --headless --path . --script res://tests/combat_math_test.gd
 godot --headless --path . --script res://tests/monster_diversity_test.gd
+godot --headless --path . --script res://tests/inventory_test.gd
 # Movement/camera/navmesh flaky in some environments; still useful signal:
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
 godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
-The seven feature tests (combat, targeting, status_points, experience, death_respawn, combat_math, monster_diversity) pass cleanly. prototype/click_movement/aggro are known-flaky timing checks for movement, camera, input, animation, assets, and navmesh code.
+The ten feature tests (combat, targeting, status_points, experience, death_respawn, combat_math, monster_diversity, hotbar, spells, inventory) pass cleanly. prototype/click_movement/aggro are known-flaky timing checks for movement, camera, input, animation, assets, and navmesh code.
 
 The integration checks cover physical WASD/Q/E bindings, all eight directions, consistent movement speed, retained idle facing, floor contact, obstacle/boundary collisions, camera-free physics with movement recovery, camera orbit/reversal, movement/facing after rotation, and persistent map-facing direction through full camera orbits. Mouse-wheel checks cover zoom direction, limits, reversal, UI input blocking, and inactive cameras. Follow checks cover render-frame centering during movement, reversal and stopping, independence from player rotation, and missing/restored targets.
 

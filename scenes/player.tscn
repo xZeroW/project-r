@@ -17,6 +17,12 @@
 [ext_resource type="Script" uid="uid://c1u5n75l03myi" path="res://scripts/experience_curve.gd" id="experience_curve"]
 [ext_resource type="Script" uid="uid://bh10kdxm5coht" path="res://scripts/components/experience_ui.gd" id="experience_ui"]
 [ext_resource type="Script" uid="uid://bk0mwqx8pswkw" path="res://scripts/components/hotbar.gd" id="hotbar"]
+[ext_resource type="Script" uid="uid://t2bd2qma52dc" path="res://scripts/components/inventory.gd" id="inventory"]
+[ext_resource type="Script" uid="uid://c5bgedowpd14v" path="res://scripts/components/inventory_ui.gd" id="inventory_ui"]
+[ext_resource type="Resource" path="res://resources/items/blue_gem.tres" id="item_blue_gem"]
+[ext_resource type="Script" uid="uid://byj743ovt4fva" path="res://scripts/components/item_definition.gd" id="item_definition"]
+[ext_resource type="Resource" path="res://resources/items/iron_sword.tres" id="item_iron_sword"]
+[ext_resource type="Resource" path="res://resources/items/red_potion.tres" id="item_red_potion"]
 [ext_resource type="Resource" path="res://resources/spells/aoe_damage.tres" id="spell_aoe"]
 [ext_resource type="Script" uid="uid://bavu1u6lhx4cu" path="res://scripts/components/spell_caster.gd" id="spell_caster"]
 [ext_resource type="Script" uid="uid://bsg8f3kcgwuu1" path="res://scripts/components/spell_definition.gd" id="spell_definition"]
@@ -107,6 +113,17 @@ experience = NodePath("../Experience")
 unique_name_in_owner = true
 script = ExtResource("status_points")
 stats = SubResource("PlayerStats")
+
+[node name="Inventory" type="Node" parent="." unique_id=110000001]
+unique_name_in_owner = true
+script = ExtResource("inventory")
+initial_items = Array[ExtResource("item_definition")]([ExtResource("item_red_potion"), ExtResource("item_iron_sword"), ExtResource("item_blue_gem")])
+
+[node name="InventoryUI" type="CanvasLayer" parent="." unique_id=110000002 node_paths=PackedStringArray("inventory")]
+unique_name_in_owner = true
+layer = 25
+script = ExtResource("inventory_ui")
+inventory = NodePath("../Inventory")
 
 [node name="Hotbar" type="CanvasLayer" parent="." unique_id=1740159308 node_paths=PackedStringArray("caster")]
 unique_name_in_owner = true

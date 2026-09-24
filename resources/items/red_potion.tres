@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDefinition" format=3 uid="uid://ex73au654ubr"]
+
+[ext_resource type="Script" uid="uid://byj743ovt4fva" path="res://scripts/components/item_definition.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://bb4vnkd657ylk" path="res://assets/items/raven_fantasy_icons.png" id="2_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_potion"]
+atlas = ExtResource("2_atlas")
+region = Rect2(0, 64, 64, 64)
+
+[resource]
+script = ExtResource("1_item")
+id = &"red_potion"
+display_name = "Red Potion"
+description = "A basic restorative potion. Consumable effects come in the next item pass."
+icon = SubResource("AtlasTexture_potion")

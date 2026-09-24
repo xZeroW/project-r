@@ -14,7 +14,7 @@ godot --path .
 godot --headless --editor --path . --import
 
 # Validation: SceneTree test scripts, run individually (exit 0 = pass, 1 = failures).
-# Nine feature tests pass cleanly:
+# Ten feature tests pass cleanly:
 godot --headless --path . --script res://tests/combat_test.gd
 godot --headless --path . --script res://tests/targeting_test.gd
 godot --headless --path . --script res://tests/status_points_test.gd
@@ -24,13 +24,14 @@ godot --headless --path . --script res://tests/combat_math_test.gd
 godot --headless --path . --script res://tests/monster_diversity_test.gd
 godot --headless --path . --script res://tests/hotbar_test.gd
 godot --headless --path . --script res://tests/spells_test.gd
+godot --headless --path . --script res://tests/inventory_test.gd
 # Known-flaky in this environment (pre-existing nav/camera timing flakes; still a useful signal):
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
 godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
-There is no aggregate runner or lint setup. These twelve scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the nine green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, targeting, spells, or the hotbar; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
+There is no aggregate runner or lint setup. These thirteen scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the ten green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, targeting, spells, the hotbar, or inventory; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
 
 ## Architecture
 

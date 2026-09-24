@@ -85,6 +85,18 @@ formulas (simple prototype defaults):
   key/click/lock/rearrange semantics, damage + radius + EXP credit, mana, the
   global-cooldown matrix, and tag increases.
 
+## Priority 4 — Inventory foundation (Phase C) — DONE
+
+- `ItemDefinition` Resources define immutable ids, names, descriptions, and
+  square icons. Three starter resources use regions of the supplied Raven
+  Fantasy 64×64 sprite atlas.
+- `Inventory` owns a 20-slot, one-item-per-slot bag. It emits one
+  `inventory_changed` signal for a move/swap; its UI never edits the slot array.
+- **I** toggles `InventoryUI`, which reuses a 5×4 grid of native drag-and-drop
+  `InventorySlot` Controls. Dragging to an empty slot moves an item; dragging
+  over a full one swaps them. Stacking, drops, equipment effects, and saves are
+  deliberately deferred to follow-on item passes.
+
 ## Later (after A, D & B, sprite work allowed to expand)
 
 C. Items, loot, inventory, equipment
@@ -116,3 +128,4 @@ earlier systems is in scope when a later phase requires it.
 | 2026-09-17 | Confirmed | Phase B spells: data-driven `SpellDefinition` with POE-style tags + square icons; `SpellCaster` executes AoE (25 dmg / 4.0 radius) and heal (25) through the melee pipeline with mana costs and a shared 1s global cooldown whose per-spell longer cooldowns continue past it. | Owner's Phase B spell brief. |
 | 2026-09-17 | Confirmed | Hotbar slots hold spells and a lock button (default locked) gates drag-rearrangement while locked clicks cast; cooldowns render as a clockwise pizza-slice shadow with remaining seconds. | Owner's hotbar move/cooldown brief. |
 | 2026-09-17 | Confirmed | Repaired seven stale integration tests that still addressed the pre-Phase-D `Monster`/`Monster2` world nodes (they hung before reaching any assertion); they now read `Poring`/`Poporing`. Poring stays passive, so `monster_diversity_test` expects `aggressive = false`. `aggro_test` remains a nav/timing flake. | Phase B verification caught the stale refs. |
+| 2026-09-24 | Confirmed | Phase C begins with a 20-slot non-stacking inventory. Each item uses exactly one slot; native UI dragging moves to empty slots and swaps onto occupied slots. | Owner's inventory-first request. |

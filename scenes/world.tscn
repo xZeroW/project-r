@@ -35,11 +35,6 @@ ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.86, 1, 1)
 ambient_light_energy = 0.65
 
-[sub_resource type="LabelSettings" id="HelpStyle"]
-font_size = 20
-shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.8)
-
 [node name="World" type="Node3D" unique_id=1345962942]
 
 [node name="Player" parent="." unique_id=573006074 instance=ExtResource("1")]
@@ -84,17 +79,3 @@ transform = Transform3D(0.8660254, 0.40957603, -0.28678823, 0, 0.57357645, 0.819
 light_color = Color(1, 0.94, 0.84, 1)
 light_energy = 1.1
 shadow_enabled = true
-
-[node name="HUD" type="CanvasLayer" parent="." unique_id=177097192]
-
-[node name="Controls" type="Label" parent="HUD" unique_id=1055171722]
-offset_left = 24.0
-offset_top = 20.0
-text = "MAP PROTOTYPE
-Left click — move to destination · WASD — move / cancel route
-Q / E — rotate camera · Mouse wheel — zoom
-Click monster — approach / auto-attack · WASD / ground click — cancel
-C — status window (spend stat points) · R — restart encounter
-1 — AoE Blast · 2 — Heal · Shift + click a hotbar spell to move it
-Death — respawn at spawn · 5% BASE EXP lost"
-label_settings = SubResource("HelpStyle")
