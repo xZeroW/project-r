@@ -94,8 +94,14 @@ formulas (simple prototype defaults):
   `inventory_changed` signal for a move/swap; its UI never edits the slot array.
 - **I** toggles `InventoryUI`, which reuses a 5×4 grid of native drag-and-drop
   `InventorySlot` Controls. Dragging to an empty slot moves an item; dragging
-  over a full one swaps them. Stacking, drops, equipment effects, and saves are
-  deliberately deferred to follow-on item passes.
+  over a full one swaps them.
+- Monster definition loot entries now spawn a floating, labelled `ItemPickup`
+  at the death site. Clicking a drop routes the player there and arrival calls
+	`Inventory.try_add_item`; passing over loot does nothing, and full bags leave
+	the pickup available. Poring drops a Red Potion; Poporing drops a Blue Gem.
+	Dragging an inventory item outside its window creates the same recoverable
+	labelled pickup at the player's feet.
+  Stacking, equipment effects, and saves remain follow-on item passes.
 
 ## Later (after A, D & B, sprite work allowed to expand)
 
@@ -129,3 +135,4 @@ earlier systems is in scope when a later phase requires it.
 | 2026-09-17 | Confirmed | Hotbar slots hold spells and a lock button (default locked) gates drag-rearrangement while locked clicks cast; cooldowns render as a clockwise pizza-slice shadow with remaining seconds. | Owner's hotbar move/cooldown brief. |
 | 2026-09-17 | Confirmed | Repaired seven stale integration tests that still addressed the pre-Phase-D `Monster`/`Monster2` world nodes (they hung before reaching any assertion); they now read `Poring`/`Poporing`. Poring stays passive, so `monster_diversity_test` expects `aggressive = false`. `aggro_test` remains a nav/timing flake. | Phase B verification caught the stale refs. |
 | 2026-09-24 | Confirmed | Phase C begins with a 20-slot non-stacking inventory. Each item uses exactly one slot; native UI dragging moves to empty slots and swaps onto occupied slots. | Owner's inventory-first request. |
+| 2026-09-24 | Confirmed | Phase C loot: deterministic `MonsterDefinition` drop lists spawn persistent labelled world pickups. Clicking a drop paths to it and collects on arrival; proximity never auto-loots. | Owner's click-to-loot correction. |

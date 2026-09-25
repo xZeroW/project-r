@@ -5,8 +5,11 @@ extends Control
 var inventory: Inventory
 var slot_index: int = -1
 var item: ItemDefinition
+var _is_drag_source: bool = false
 
 var _background: StyleBoxFlat
+
+signal drag_ended(index: int, succeeded: bool, screen_position: Vector2)
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
@@ -27,6 +30,9 @@ func configure(owner_inventory: Inventory, index: int, slot_item: ItemDefinition
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if item == null:
 		return null
+	# Godot sends DRAG_END to every Control; record the sole source before the
+	# preview is created so only it can ever turn an outside release into a drop.
+	_is_drag_source = true
 	var preview := InventorySlot.new()
 	preview.custom_minimum_size = Vector2(56, 56)
 	preview.size = Vector2(56, 56)
@@ -43,6 +49,12 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	if _can_drop_data(_at_position, data):
 		inventory.move_slot(int(data["slot_index"]), slot_index)
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_DRAG_END or not _is_drag_source:
+		return
+	_is_drag_source = false
+	drag_ended.emit(slot_index, is_drag_successful(), get_viewport().get_mouse_position())
 
 func _draw() -> void:
 	var rect := Rect2(Vector2.ZERO, size)

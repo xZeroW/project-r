@@ -16,6 +16,8 @@ extends Resource
 @export var crit: float = 0.0
 @export var block: float = 0.0
 @export var experience_reward: int = 2
+## Deterministic one-per-entry drops. Chance tables and stacks come later.
+@export var loot_items: Array[ItemDefinition] = []
 @export var aggressive: bool = true
 @export_range(0.0, 50.0, 0.1, "or_greater") var aggro_radius: float = 6.0
 @export_range(0.1, 100.0, 0.1, "or_greater") var leash_distance: float = 10.0

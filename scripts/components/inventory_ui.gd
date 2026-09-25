@@ -60,9 +60,14 @@ func _build_window() -> void:
 	for index: int in inventory.get_slot_count():
 		var slot := InventorySlot.new()
 		slot.custom_minimum_size = SLOT_SIZE
+		slot.drag_ended.connect(_on_slot_drag_ended)
 		grid.add_child(slot)
 		_slots.append(slot)
 
 func _refresh_slots() -> void:
 	for index: int in _slots.size():
 		_slots[index].configure(inventory, index, inventory.get_item(index))
+
+func _on_slot_drag_ended(index: int, succeeded: bool, screen_position: Vector2) -> void:
+	if not succeeded and not _panel.get_global_rect().has_point(screen_position):
+		inventory.drop_slot(index)

@@ -17,6 +17,7 @@ func run() -> void:
 	var monster := world.get_node("Poring") as Monster
 	var targeting := player.get_node("Targeting") as Targeting
 	var clicks := player.get_node("ClickMovement") as ClickMovement
+	var interactions := player.get_node("WorldInteraction") as WorldInteraction
 	var combat := player.get_node("Combat") as MeleeCombat
 	var enemy := monster.get_node("Combat") as MeleeCombat
 	combat.stats.crit = 0.0
@@ -41,6 +42,7 @@ func run() -> void:
 	root.push_input(click, true)
 	check(not targeting.has_target(), "Picking must wait for physics.")
 	await physics_frame
+	interactions._physics_process(0.016)
 	clicks.get_direction(player, 4.0, 0.016)
 	check(targeting.target == enemy, "Monster click must select that enemy.")
 	check(not clicks.has_destination(), "Selecting enemy must clear ground route.")

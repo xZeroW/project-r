@@ -34,7 +34,7 @@ The following are implemented prototype choices, not approved long-term specific
 - WASD uses physical key bindings. W moves toward screen-up, S toward screen-down, A toward screen-left, and D toward screen-right on the ground plane.
 - Diagonal movement has the same world-space speed as cardinal movement: 4 units per second.
 - The player collides with map geometry and uses gravity to remain grounded. The player capsule radius is 0.5 units, matching the navigation mesh agent radius so WASD and click-to-move maintain the same wall and obstacle clearance.
-- Left-click on the floor requests a click-to-move destination. A screen-space ray is captured when the click is received, the physics query is deferred to the next physics tick, and the ground hit (group `walkable_ground`) is validated against the baked navigation mesh before a route is accepted. The player walks the cached path at the same 4 units/second speed; WASD cancels movement and any pending click. A teal torus marker tracks the accepted destination and is cleared on arrival or cancellation. See the click-movement section below.
+- Left-click requests a world interaction. `WorldInteraction` captures the screen-space ray and classifies its deferred physics hit as ground, monster, or loot. Ground positions are passed to `ClickMovement`, validated against the baked navigation mesh, and accepted as cached routes. The player walks at the same 4 units/second speed; WASD cancels movement and any pending interaction. A teal torus marker tracks the accepted destination and is cleared on arrival or cancellation. See the click-movement section below.
 
 ## Current implementation — Player composition
 
@@ -44,7 +44,8 @@ The following are implemented prototype choices, not approved long-term specific
 | `scripts/player.gd` | Coordinates components during physics updates and owns the persistent world-facing direction. |
 | `scripts/components/player_input.gd` | Reads movement actions into a 2D intent vector and forwards ground clicks as screen-space destination requests. |
 | `scripts/components/character_movement.gd` | Converts intent into camera-relative ground movement and applies physics. |
-| `scripts/components/click_movement.gd` | Resolves deferred screen clicks against physics and the navigation map, follows one cached world-space path, detects arrival and stuck states. |
+| `scripts/components/world_interaction.gd` | Resolves deferred screen rays during physics and classifies ground, monster, and loot clicks. |
+| `scripts/components/click_movement.gd` | Validates requested destinations against navigation, follows one cached path, and detects arrival/stuck states. |
 | `scripts/components/destination_marker.gd` | Shows a teal torus at the accepted destination and clears it on arrival or cancellation. |
 | `scripts/components/directional_sprite.gd` | Projects world facing onto camera ground-plane axes, chooses the source clip/mirroring, and preserves walking phase when turning. |
 
@@ -71,11 +72,11 @@ Actual horizontal displacement after `move_and_slide()` selects idle versus walk
 
 ## Current implementation — Click to move
 
-- A **left-click** (InputMap action `click_move`) requests a destination. `scripts/components/player_input.gd` emits the screen position without deferring; the player passes it to `scripts/components/click_movement.gd`, which captures the camera's ray origin and direction at click time so later camera motion cannot shift the picked point. The physics ray itself is resolved on the next physics tick.
+- A **left-click** (InputMap action `click_move`) requests an interaction. `scripts/components/player_input.gd` emits the screen position without deferring; the player passes it to `WorldInteraction`, which captures the camera ray at click time so later camera motion cannot shift the picked point. It resolves the physics ray on the next physics tick and emits a typed ground, monster, or loot selection signal.
 - The deferred ray filters physics layer `1` (bit one) and skips the player's own body. A route is only accepted when the ray hits a collider in the `walkable_ground` group (currently the floor box), the navigation map has finished at least one synchronization, the clicked point has a valid owner on the map, the navmesh's snapped point is within 0.75 units horizontally and 0.75 vertically of the picked surface (the baked walkable surface floats roughly half a unit above the floor, so the vertical tolerance swallows that offset rather than conflating it with off-floor snaps), and a path from the player to the snapped target exists and ends within 0.1 units of it. Any failure silently ignores the click.
 - Because the floor is 24 × 24 while the orthographic camera only shows part of it, only on-screen floor pixels can currently be picked. Off-screen clicks cannot create a route, which also makes invalid clicks (obstacles, walls, outside the floor, UI-consumed clicks, clicking directly under the player) safely no-ops.
 - On acceptance, `click_movement.gd` caches the world-space path, emits `destination_changed`, and walks the path segment-to-segment at the movement component's 4 units/second speed. Waypoints that fall inside `arrival_distance` (0.08) are skipped without overshooting, the final step is shortened to avoid circling a waypoint, and arrival clears the destination (`destination_cleared`). A player that keeps `record_motion` reporting zero displacement for `stuck_timeout` (1 second) cancels the route, so a physically blocked path times out instead of grinding forever.
-- `player.gd` wires clicking and movement so that any non-zero WASD intent first calls `click_movement.cancel()`: keyboard input overrides and clears the click route, its marker, and any queued unprocessed click.
+- `player.gd` wires interaction and movement so any non-zero WASD intent cancels both `WorldInteraction`'s pending pick and `ClickMovement`'s route: keyboard input clears the route and marker without allowing a queued click to resume later.
 - `scripts/components/destination_marker.gd` shows a teal emissive torus raised slightly above the accepted destination and hides it on arrival or cancellation. Because the destination is stored in world space relative to the marker's parent, orbit/zoom and player motion do not shift it.
 
 ## Verification

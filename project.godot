@@ -150,6 +150,7 @@ hotbar_0={
 3d_render/layer_2="Monster"
 3d_render/layer_3="Solid"
 3d_render/layer_4="Jumpable"
+3d_physics/layer_5="Loot"
 
 [physics]
 

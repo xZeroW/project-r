@@ -59,9 +59,14 @@ func run() -> void:
 	target_slot._drop_data(Vector2.ZERO, drag_data)
 	check(inventory.get_item(2).id == &"red_potion" and inventory.get_item(1).id == &"blue_gem", "Native slot drop must delegate a swap to Inventory.")
 	check(not target_slot._can_drop_data(Vector2.ZERO, {"inventory": null, "slot_index": 1}), "A slot must reject drag data from another inventory.")
+	var dropped: Array[ItemDefinition] = []
+	inventory.item_dropped.connect(dropped.append)
+	inventory_ui._on_slot_drag_ended(2, false, Vector2.ZERO)
+	await process_frame
+	check(inventory.get_item(2) == null and dropped.size() == 1 and dropped[0].id == &"red_potion", "Dropping outside the inventory must remove and publish the selected item.")
 
 	player_actor.queue_free()
 	await process_frame
 	if failures == 0:
-		print("PASS: 20-slot inventory, I toggle, item resources, data-owned move/swap, reactive reusable UI")
+		print("PASS: 20-slot inventory, I toggle, item resources, data-owned move/swap/drop, reactive reusable UI")
 	quit(0 if failures == 0 else 1)

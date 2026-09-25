@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="MonsterDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="MonsterDefinition" format=3 uid="uid://b7k0hhp840y5e"]
 
-[ext_resource type="Script" path="res://scripts/components/monster_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://c4n6yowjso7fi" path="res://scripts/components/monster_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://byj743ovt4fva" path="res://scripts/components/item_definition.gd" id="2_item_definition"]
+[ext_resource type="Resource" uid="uid://cnaigvfdsssld" path="res://resources/items/blue_gem.tres" id="3_blue_gem"]
 
 [resource]
 script = ExtResource("1")
@@ -11,9 +13,9 @@ movement_speed = 2.4
 attack_speed = 1.2
 attack_damage = 16.0
 experience_reward = 8
+loot_items = Array[ExtResource("2_item_definition")]([ExtResource("3_blue_gem")])
 aggro_radius = 7.0
 leash_distance = 12.0
 respawn_delay = 8.0
 attack_range = 1.6
-attack_duration = 2.0
 tint = Color(0.75, 1, 0.8, 1)

@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://cxutb7e8p1vuc" path="res://scenes/monster.tscn" id="4"]
 [ext_resource type="Resource" uid="uid://d2qqhbfu5hnvg" path="res://resources/monsters/poring.tres" id="5_def_poring"]
 [ext_resource type="Resource" path="res://resources/monsters/poporing.tres" id="6_def_poporing"]
+[ext_resource type="Script" path="res://scripts/world.gd" id="world_script"]
+[ext_resource type="Script" path="res://scripts/components/item_pickup_spawner.gd" id="pickup_spawner"]
 
 [sub_resource type="Resource" id="Resource_i7141"]
 resource_local_to_scene = true
@@ -35,13 +37,21 @@ ambient_light_source = 3
 ambient_light_color = Color(0.8, 0.86, 1, 1)
 ambient_light_energy = 0.65
 
-[node name="World" type="Node3D" unique_id=1345962942]
+[node name="World" type="Node3D" unique_id=1345962942 node_paths=PackedStringArray("player", "inventory", "pickup_spawner", "poring", "poporing")]
+script = ExtResource("world_script")
+player = NodePath("Player")
+inventory = NodePath("Player/Inventory")
+pickup_spawner = NodePath("ItemPickupSpawner")
+poring = NodePath("Poring")
+poporing = NodePath("Poporing")
 
 [node name="Player" parent="." unique_id=573006074 instance=ExtResource("1")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1464311, 0)
 stats = SubResource("Resource_i7141")
 
 [node name="Poring" parent="." unique_id=490114106 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.75133777, -1)
 target = NodePath("../Player")
 target_combat = NodePath("../Player/Combat")
@@ -50,11 +60,18 @@ definition = ExtResource("5_def_poring")
 aggressive = false
 
 [node name="Poporing" parent="." unique_id=1245411007 node_paths=PackedStringArray("target", "target_combat") instance=ExtResource("4")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52971506, 0.44423258, -1)
 target = NodePath("../Player")
 target_combat = NodePath("../Player/Combat")
 stats = SubResource("Resource_7r4gi")
 definition = ExtResource("6_def_poporing")
+
+[node name="ItemPickupSpawner" type="Node" parent="." unique_id=110000004 node_paths=PackedStringArray("inventory", "spawn_root")]
+unique_name_in_owner = true
+script = ExtResource("pickup_spawner")
+inventory = NodePath("../Player/Inventory")
+spawn_root = NodePath("..")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=671750590 node_paths=PackedStringArray("follow_target")]
 process_physics_priority = -1

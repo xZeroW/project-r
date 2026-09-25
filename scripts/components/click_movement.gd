@@ -1,34 +1,23 @@
 class_name ClickMovement
 extends Node
-## Resolves queued ground clicks in physics and follows one cached world-space path.
+## Builds and follows navigation paths requested by interaction components.
 
 signal destination_changed(position: Vector3)
 signal destination_cleared
-signal enemy_selected(enemy: MeleeCombat)
 
 @export_range(0.01, 0.5, 0.01) var arrival_distance: float = 0.08
 @export_range(0.1, 5.0, 0.1) var stuck_timeout: float = 1.0
-@export_flags_3d_physics var ground_pick_mask: int = 1
-
 var _path: PackedVector3Array = PackedVector3Array()
 var _path_index: int = 0
-var _pending_click: bool = false
-var _ray_origin: Vector3
-var _ray_end: Vector3
 var _stuck_time: float = 0.0
-
-func request_destination(screen_position: Vector2, camera: Camera3D) -> void:
-	# Capture the rendered view at click time; only the physics query is deferred.
-	_ray_origin = camera.project_ray_origin(screen_position)
-	_ray_end = _ray_origin + camera.project_ray_normal(screen_position) * camera.far
-	_pending_click = true
+var _loot_target: ItemPickup
 
 func has_destination() -> bool:
 	return not _path.is_empty()
 
 func cancel() -> void:
-	_pending_click = false
 	_stuck_time = 0.0
+	_loot_target = null
 	if not has_destination():
 		return
 	_path.clear()
@@ -36,8 +25,6 @@ func cancel() -> void:
 	destination_cleared.emit()
 
 func get_direction(body: CharacterBody3D, speed: float, delta: float) -> Vector3:
-	if _pending_click:
-		_resolve_click(body)
 	while _path_index < _path.size():
 		var offset := _path[_path_index] - body.global_position
 		offset.y = 0.0
@@ -46,6 +33,11 @@ func get_direction(body: CharacterBody3D, speed: float, delta: float) -> Vector3
 			continue
 		# Shorten the final step rather than overshooting and circling a waypoint.
 		return offset.normalized() * minf(1.0, offset.length() / maxf(speed * delta, 0.001))
+	if _loot_target != null:
+		var pickup := _loot_target
+		_loot_target = null
+		if is_instance_valid(pickup):
+			pickup.try_collect()
 	cancel()
 	return Vector3.ZERO
 
@@ -59,20 +51,8 @@ func record_motion(displacement: Vector3, delta: float) -> void:
 	if _stuck_time >= stuck_timeout:
 		cancel()
 
-func _resolve_click(body: CharacterBody3D) -> void:
-	_pending_click = false
-	var query := PhysicsRayQueryParameters3D.create(_ray_origin, _ray_end, ground_pick_mask, [body.get_rid()])
-	var hit := body.get_world_3d().direct_space_state.intersect_ray(query)
-	var collider := hit.get("collider") as Node
-	if collider != null and collider.is_in_group(&"monsters"):
-		var enemy := collider as Monster
-		if enemy != null and enemy.combat.damage_enabled and enemy.combat.stats.current_health > 0.0:
-			cancel()
-			enemy_selected.emit(enemy.combat)
-		return
-	if collider == null or not collider.is_in_group(&"walkable_ground"):
-		return
-	var clicked_position: Vector3 = hit["position"]
+func request_ground_destination(body: CharacterBody3D, clicked_position: Vector3) -> void:
+	_loot_target = null
 	var navigation_map := body.get_world_3d().navigation_map
 	if NavigationServer3D.map_get_iteration_id(navigation_map) == 0:
 		return
@@ -92,3 +72,21 @@ func _resolve_click(body: CharacterBody3D) -> void:
 	_path_index = 0
 	_stuck_time = 0.0
 	destination_changed.emit(Vector3(target.x, clicked_position.y, target.z))
+
+func request_loot_destination(body: CharacterBody3D, pickup: ItemPickup) -> void:
+	if pickup.inventory == null or pickup.inventory.is_full():
+		return
+	var navigation_map := body.get_world_3d().navigation_map
+	if NavigationServer3D.map_get_iteration_id(navigation_map) == 0:
+		return
+	var target := NavigationServer3D.map_get_closest_point(navigation_map, pickup.global_position)
+	if not NavigationServer3D.map_get_closest_point_owner(navigation_map, target).is_valid():
+		return
+	var path := NavigationServer3D.map_get_path(navigation_map, body.global_position, target, true)
+	if path.is_empty() or path[path.size() - 1].distance_to(target) > 0.1:
+		return
+	_path = path
+	_path_index = 0
+	_stuck_time = 0.0
+	_loot_target = pickup
+	destination_changed.emit(Vector3(target.x, pickup.global_position.y, target.z))

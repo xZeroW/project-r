@@ -1,8 +1,11 @@
 [gd_resource type="Resource" script_class="MonsterDefinition" format=3 uid="uid://d2qqhbfu5hnvg"]
 
 [ext_resource type="Script" uid="uid://c4n6yowjso7fi" path="res://scripts/components/monster_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://byj743ovt4fva" path="res://scripts/components/item_definition.gd" id="2_item_definition"]
+[ext_resource type="Resource" uid="uid://ex73au654ubr" path="res://resources/items/red_potion.tres" id="3_red_potion"]
 
 [resource]
 script = ExtResource("1")
 display_name = &"Poring"
+loot_items = Array[ExtResource("2_item_definition")]([ExtResource("3_red_potion")])
 aggressive = false

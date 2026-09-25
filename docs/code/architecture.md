@@ -11,7 +11,7 @@ tags:
   - rust
   - bevy
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-24
 ---
 
 # Code — Architecture
@@ -45,6 +45,21 @@ The following conventions are recommendations for implementing the confirmed com
 - **Use inheritance selectively.** Extending Godot's built-in classes is normal; prefer composition for combining reusable gameplay capabilities.
 
 Composition does not require a custom entity-component-system framework. Godot nodes, scenes, Resources, and GDScript objects are candidate building blocks; their exact organization remains to be established through implementation.
+
+## Confirmed — Runtime ownership boundaries
+
+- Entity roots orchestrate their own components through typed references and
+  signals. Components do not depend on parent scripts or mutate sibling state.
+- `WorldInteraction` owns physics-safe click classification; `ClickMovement`
+  owns navigation paths only, while `Targeting` owns combat pursuit.
+- Monsters emit loot intent without knowing the player's inventory or world
+  hierarchy. The world composition root connects those events to one
+  `ItemPickupSpawner`, which owns pickup creation and dependency injection.
+- Inventory slot Controls emit drag lifecycle events. `InventoryUI` owns window
+  boundary policy, and `Inventory` alone mutates slot contents.
+- The existing `scripts/components`, `resources/<domain>`, and `scenes` layout
+  remains the project convention until a larger feature-folder migration has a
+  concrete benefit; isolated churn is avoided.
 
 ## Proposed — Example responsibility split
 
@@ -91,3 +106,4 @@ Bevy is a Rust engine/framework, not a drop-in GDScript replacement. Its use ins
 | --- | --- | --- | --- |
 | 2026-09-12 | Confirmed | Start with Godot and GDScript, using composition as the guiding design approach. | Project owner's code-direction brief. |
 | 2026-09-12 | Confirmed | Keep Rust and a possible Bevy integration as conditional future options. | Project owner's code-direction brief. |
+| 2026-09-24 | Confirmed | Separate click classification from path following; centralize pickup construction in a world-owned spawner; use signals for monster loot and inventory drag boundaries. | Code-organization audit and remediation. |

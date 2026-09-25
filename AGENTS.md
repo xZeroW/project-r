@@ -14,7 +14,7 @@ godot --path .
 godot --headless --editor --path . --import
 
 # Validation: SceneTree test scripts, run individually (exit 0 = pass, 1 = failures).
-# Ten feature tests pass cleanly:
+# Eleven feature tests pass cleanly:
 godot --headless --path . --script res://tests/combat_test.gd
 godot --headless --path . --script res://tests/targeting_test.gd
 godot --headless --path . --script res://tests/status_points_test.gd
@@ -25,19 +25,20 @@ godot --headless --path . --script res://tests/monster_diversity_test.gd
 godot --headless --path . --script res://tests/hotbar_test.gd
 godot --headless --path . --script res://tests/spells_test.gd
 godot --headless --path . --script res://tests/inventory_test.gd
+godot --headless --path . --script res://tests/loot_test.gd
 # Known-flaky in this environment (pre-existing nav/camera timing flakes; still a useful signal):
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd
 godot --headless --path . --script res://tests/aggro_test.gd
 ```
 
-There is no aggregate runner or lint setup. These thirteen scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the ten green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, targeting, spells, the hotbar, or inventory; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
+There is no aggregate runner or lint setup. These fourteen scripts are the entire test suite; each is a `SceneTree` script that instantiates the full world and ticks physics, so a complete run takes several minutes. Tests print `PASS: ...` on success; failures appear as `push_error` lines and a nonzero exit. Budget ~30–60s per test. Run the eleven green feature tests after touching combat, stats, status points, leveling, respawn, monster definitions, targeting, spells, the hotbar, inventory, or loot; treat prototype/click_movement/aggro as a flaky signal after movement, camera, input, animation, assets, or navmesh code.
 
 ## Architecture
 
 - `scenes/world.tscn` is the entrypoint. `scenes/player.tscn` composes a `CharacterBody3D` from components accessed via `%SceneUniqueName` refs in `scripts/player.gd` (`scripts/player.gd:7`).
 - Components live in `scripts/components/`:
-  - **Movement/presentation**: `player_input` (intent vector, click forwarding), `character_movement` (camera-relative ground physics), `click_movement` (ray picking + navmesh path following), `destination_marker` (teal torus), `directional_sprite` (AtlasTexture/facing presentation).
+  - **Movement/presentation**: `player_input` (intent vector, click forwarding), `world_interaction` (physics-safe ground/monster/loot picking), `character_movement` (camera-relative ground physics), `click_movement` (navmesh path following), `destination_marker` (teal torus), `directional_sprite` (AtlasTexture/facing presentation).
   - **Combat**: `melee_combat` (shared damage/cooldown/EXP-credit component), `combat_resolver` (RefCounted RO-contested roll: hit% = clamp(95 + acc + level mod − evasion, 5%, 95%) → block → crit, injectable `dice`), `targeting` (click-to-attack pursuit), `target_indicator` (target ring), `damage_numbers` (screen-space popups incl. MISS/EVADE/BLOCK/crit), `health_bar_ui`.
   - **Progression**: `status_points` (STR/AGI/VIT/INT/DEX/LUK + derived stats), `status_ui` (C-toggle panel), `experience`, `experience_ui`, `death_respawn` (player death EXP penalty + respawn).
   - **Skills (Phase B)**: `hotbar` (centered 10 slots bound to 1–0; `hotbar_1`…`hotbar_0` actions; slots hold `SpellDefinition`s; a plain click casts, Shift+click or Shift+drag rearranges spells between slots with a cursor-following ghost — move to empty, swap onto filled, off-bar cancels; hotbar keys always emit `slot_activated(index)`, empty slots click-through, cooldown pizza-slice shadow), `hotbar_slot` (custom-drawn slot: square icon + key badge + pie), `spell_definition` (Resource: POE-style tags, square icons), `spell_caster` (spellbook, mana, tag-scaled power, 1s global cooldown with per-spell longer cooldowns, AoE/heal effects). See `docs/code/hotbar.md` and `docs/code/spells-mana.md`.

@@ -11,11 +11,13 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @onready var spell_caster: SpellCaster = %SpellCaster
 @onready var hotbar: Hotbar = %Hotbar
 @onready var inventory: Inventory = %Inventory
+@onready var world_interaction: WorldInteraction = %WorldInteraction
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right") or event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
 		targeting.cancel()
 		click_movement.cancel()
+		world_interaction.cancel()
 	if event.is_action_pressed("restart_encounter") and not event.is_echo():
 		get_tree().reload_current_scene.call_deferred()
 		get_viewport().set_input_as_handled()
@@ -40,8 +42,10 @@ func _ready() -> void:
 	input_component.destination_requested.connect(_on_destination_requested)
 	click_movement.destination_changed.connect(destination_marker.show_destination)
 	click_movement.destination_cleared.connect(destination_marker.clear_destination)
-	click_movement.enemy_selected.connect(targeting.select)
-	click_movement.destination_changed.connect(func(_position: Vector3) -> void: targeting.cancel())
+	click_movement.destination_changed.connect(_on_movement_destination_changed)
+	world_interaction.ground_selected.connect(_on_ground_selected)
+	world_interaction.enemy_selected.connect(_on_enemy_selected)
+	world_interaction.loot_selected.connect(_on_loot_selected)
 	hotbar.slot_activated.connect(_on_hotbar_slot)
 	hotbar.bind_spell(0, spell_caster.get_spell(&"aoe_damage"))
 	hotbar.bind_spell(1, spell_caster.get_spell(&"heal"))
@@ -64,7 +68,22 @@ func _on_destination_requested(screen_position: Vector2) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	if camera != null:
-		click_movement.request_destination(screen_position, camera)
+		world_interaction.request_interaction(screen_position, camera)
+
+func _on_ground_selected(position: Vector3) -> void:
+	targeting.cancel()
+	click_movement.request_ground_destination(self, position)
+
+func _on_enemy_selected(enemy: MeleeCombat) -> void:
+	click_movement.cancel()
+	targeting.select(enemy)
+
+func _on_loot_selected(pickup: ItemPickup) -> void:
+	targeting.cancel()
+	click_movement.request_loot_destination(self, pickup)
+
+func _on_movement_destination_changed(_position: Vector3) -> void:
+	targeting.cancel()
 
 func _physics_process(delta: float) -> void:
 	if stats.current_health <= 0.0:
@@ -89,6 +108,7 @@ func _physics_process(delta: float) -> void:
 		if not direction.is_zero_approx():
 			_facing_direction = direction.normalized()
 	else:
+		world_interaction.cancel()
 		click_movement.cancel()
 		targeting.cancel()
 	var previous_position := global_position

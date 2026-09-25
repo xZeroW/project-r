@@ -3,6 +3,7 @@ extends CharacterBody3D
 
 signal attack_started
 signal attack_finished
+signal loot_dropped(items: Array[ItemDefinition], world_position: Vector3)
 
 enum State { IDLE, ENGAGED, RETURNING, DEAD }
 
@@ -199,6 +200,12 @@ func _on_died() -> void:
 	combat.damage_enabled = false
 	_health_bar.hide()
 	_shadow.hide()
+	_drop_loot()
+
+func _drop_loot() -> void:
+	if definition == null or definition.loot_items.is_empty():
+		return
+	loot_dropped.emit(definition.loot_items, global_position)
 
 func _respawn() -> void:
 	_finish_return()

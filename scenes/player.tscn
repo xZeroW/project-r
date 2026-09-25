@@ -30,6 +30,7 @@
 [ext_resource type="Script" uid="uid://ctvs1bydort3s" path="res://scripts/components/status_points.gd" id="status_points"]
 [ext_resource type="Script" uid="uid://d2417kdpb8iu3" path="res://scripts/components/status_ui.gd" id="status_ui"]
 [ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
+[ext_resource type="Script" path="res://scripts/components/world_interaction.gd" id="world_interaction"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -79,6 +80,11 @@ mesh = SubResource("ContactShadowMesh")
 [node name="PlayerInput" type="Node" parent="." unique_id=373214183]
 unique_name_in_owner = true
 script = ExtResource("2")
+
+[node name="WorldInteraction" type="Node" parent="." unique_id=110000003 node_paths=PackedStringArray("body")]
+unique_name_in_owner = true
+script = ExtResource("world_interaction")
+body = NodePath("..")
 
 [node name="Combat" type="Node" parent="." unique_id=145683198]
 unique_name_in_owner = true

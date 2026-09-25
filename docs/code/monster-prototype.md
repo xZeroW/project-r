@@ -43,9 +43,12 @@ no movement so the monster cannot remain permanently invulnerable.
 
 Death disables collision and combat, hides health UI and contact shadow, and fades the
 current sprite over 0.6 seconds. This is procedural death feedback, not a sliced death
-clip. After the respawn delay, the same entity resets to its original world spawn with
-full health, idle sprite playback, collision, shadow, and health UI restored. Teleport
-resets call `reset_physics_interpolation()` to avoid streaking across the map.
+clip. Each `MonsterDefinition.loot_items` entry also spawns a floating `ItemPickup` with
+a billboard item-name label at the death site. Clicking it paths the player to the drop
+and collects it on arrival; passing over it does nothing. After the respawn delay, the
+same entity resets to its original world spawn with full health, idle sprite playback,
+collision, shadow, and health UI restored. Teleport resets call
+`reset_physics_interpolation()` to avoid streaking across the map.
 
 Damage is implemented by the shared melee component; see [Combat prototype](combat-prototype.md).
 `tests/aggro_test.gd` verifies passive retaliation, acquisition vs engagement,
@@ -83,6 +86,7 @@ character's projected world position. Its green fill follows the owning characte
 | Date | Status | Decision | Source |
 | --- | --- | --- | --- |
 | 2026-09-16 | Confirmed | Monster instances are data-driven by `MonsterDefinition` resources; tint lives on `MeleeCombat.base_modulate` (not `visual.modulate`) so the damage flash preserves it. | Phase D (monster diversity) implementation. |
+| 2026-09-24 | Confirmed | Monsters use deterministic data-defined loot entries: each death spawns floating pickups that remain until player collection succeeds. | Owner's loot request. |
 | 2026-09-17 | Confirmed | Poring is intentionally passive (`aggressive = false`, retaining the 6/10 default radii); only Poporing acquires targets by proximity. `monster_diversity_test` was aligned to expect the passive Poring, and its world node refs (plus seven other tests') were repaired from the stale pre-Phase-D `Monster`/`Monster2` names to `Poring`/`Poporing`. | Owner's passive-Poring decision during Phase B verification. |
 | 2026-09-17 | Confirmed | Monsters only take damage from attackers inside their spawn leash; beyond it, the hit is a MISS (via `MeleeCombat.defense_radius = leash_distance`) instead of being silently ignored. | Owner's "damaged outside follow range and does nothing" report. |
 | 2026-09-14 | Confirmed | Passive retaliation, separate spawn leash, return home, and death/respawn lifecycle supersede radius-based disengagement. | Owner's approval of the next monster behavior loop. |
