@@ -8,7 +8,6 @@ extends CanvasLayer
 @export var inventory_ui: InventoryUI
 
 var _root: Control
-var _resume_button: Button
 
 func _ready() -> void:
 	assert(status_ui != null, "EscapeMenu requires StatusUI.")
@@ -31,7 +30,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open() -> void:
 	visible = true
-	_resume_button.grab_focus()
 
 func close() -> void:
 	visible = false
@@ -96,9 +94,9 @@ func _build_menu() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	content.add_child(title)
 
-	_resume_button = _make_button("Resume")
-	_resume_button.pressed.connect(close)
-	content.add_child(_resume_button)
+	var resume_button = _make_button("Resume")
+	resume_button.pressed.connect(close)
+	content.add_child(resume_button)
 	var settings_button := _make_button("Settings")
 	settings_button.disabled = true
 	settings_button.tooltip_text = "Settings are not available yet."

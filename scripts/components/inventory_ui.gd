@@ -25,13 +25,13 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_inventory") and not event.is_echo():
 		if visible:
-			_saved_position = _window.global_position
+			_save_window_position()
 			_has_saved_position = true
 			visible = false
 		else:
 			visible = true
 			if _has_saved_position:
-				_window.global_position = _saved_position
+				_restore_window_position()
 		get_viewport().set_input_as_handled()
 
 func is_open() -> bool:
@@ -39,9 +39,18 @@ func is_open() -> bool:
 
 func close() -> void:
 	if visible:
-		_saved_position = _window.global_position
+		_save_window_position()
 		_has_saved_position = true
 		visible = false
+
+func _save_window_position() -> void:
+	_saved_position = _panel.get_global_rect().position
+
+func _restore_window_position() -> void:
+	# Anchored controls can expose a layout-origin position instead of their
+	# visible top-left corner. Translate by the rect delta so this works for
+	# centered and right-anchored windows alike.
+	_window.global_position += _saved_position - _panel.get_global_rect().position
 
 func _build_window() -> void:
 	var margin := MarginContainer.new()

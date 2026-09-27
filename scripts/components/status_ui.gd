@@ -23,7 +23,7 @@ const KNIGHT_TEXTURE := preload("res://assets/characters/knight/example.png")
 @export var inventory: Inventory
 
 var _panel: PanelContainer
-var _window: MarginContainer
+var _window: Control
 var _saved_position := Vector2.ZERO
 var _has_saved_position := false
 var _derived_label: Label
@@ -49,31 +49,34 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func toggle() -> void:
 	if _panel.visible:
-		_saved_position = _window.global_position
+		_save_window_position()
 		_has_saved_position = true
 		_panel.visible = false
 	else:
 		_panel.visible = true
 		if _has_saved_position:
-			_window.global_position = _saved_position
+			_restore_window_position()
 
 func is_open() -> bool:
 	return _panel.visible
 
 func close() -> void:
 	if _panel.visible:
-		_saved_position = _window.global_position
+		_save_window_position()
 		_has_saved_position = true
 		_panel.visible = false
 
+func _save_window_position() -> void:
+	_saved_position = _panel.get_global_rect().position
+
+func _restore_window_position() -> void:
+	# Preserve the visible top-left rather than the anchor-relative layout
+	# origin, which differs for center and right anchored windows.
+	_window.global_position += _saved_position - _panel.get_global_rect().position
+
 func _build_panel() -> void:
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
-	add_child(margin)
-	_window = margin
 	_panel = PanelContainer.new()
+	_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_panel.custom_minimum_size = Vector2(480, 510)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var style := StyleBoxFlat.new()
@@ -83,7 +86,8 @@ func _build_panel() -> void:
 	style.set_corner_radius_all(7)
 	style.set_content_margin_all(14)
 	_panel.add_theme_stylebox_override("panel", style)
-	margin.add_child(_panel)
+	add_child(_panel)
+	_window = _panel
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 8)
 	_panel.add_child(content)
@@ -96,6 +100,12 @@ func _build_panel() -> void:
 	stats_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(stats_scroll)
 	stats_scroll.add_child(_build_stat_tabs())
+	_place_initial_window.call_deferred()
+
+func _place_initial_window() -> void:
+	# Keep drag and restored positions in a top-left coordinate system. A
+	# centered anchor can otherwise reinterpret a saved position after hiding.
+	_panel.position = (get_viewport().get_visible_rect().size - _panel.size) * 0.5
 
 func _build_paper_doll() -> Control:
 	var row := HBoxContainer.new()

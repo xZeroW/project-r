@@ -106,6 +106,21 @@ func run() -> void:
 	check(attribute_ui.is_open(), "P must open the attribute distribution panel.")
 	_push_key(KEY_P)
 	check(not attribute_ui.is_open(), "P must close the attribute distribution panel.")
+	_push_key(KEY_P)
+	attribute_ui._window.position += Vector2(-80, 45)
+	var attribute_position := attribute_ui._panel.get_global_rect().position
+	_push_key(KEY_P)
+	await process_frame
+	_push_key(KEY_P)
+	await process_frame
+	check(attribute_ui._panel.get_global_rect().position.is_equal_approx(attribute_position), "Reopening a dragged attribute window must preserve its visible top-left position.")
+	ui._window.position += Vector2(70, -35)
+	var status_position := ui._panel.get_global_rect().position
+	_push_key(KEY_C)
+	await process_frame
+	_push_key(KEY_C)
+	await process_frame
+	check(ui._panel.get_global_rect().position.is_equal_approx(status_position), "Reopening a dragged character window must preserve its visible top-left position.")
 	await process_frame
 	await process_frame
 

@@ -6,7 +6,7 @@ extends CanvasLayer
 @export var status_points: StatusPoints
 
 var _panel: PanelContainer
-var _window: MarginContainer
+var _window: Control
 var _saved_position := Vector2.ZERO
 var _has_saved_position := false
 var _points_label: Label
@@ -24,13 +24,13 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_attributes") and not event.is_echo():
 		if _panel.visible:
-			_saved_position = _window.global_position
+			_save_window_position()
 			_has_saved_position = true
 			_panel.visible = false
 		else:
 			_panel.visible = true
 			if _has_saved_position:
-				_window.global_position = _saved_position
+				_restore_window_position()
 		get_viewport().set_input_as_handled()
 
 func is_open() -> bool:
@@ -38,20 +38,21 @@ func is_open() -> bool:
 
 func close() -> void:
 	if _panel.visible:
-		_saved_position = _window.global_position
+		_save_window_position()
 		_has_saved_position = true
 		_panel.visible = false
 
+func _save_window_position() -> void:
+	_saved_position = _panel.get_global_rect().position
+
+func _restore_window_position() -> void:
+	# This window starts top-right anchored, so assigning its saved layout
+	# origin directly would align the right edge to its former left edge.
+	_window.global_position += _saved_position - _panel.get_global_rect().position
+
 func _build_panel() -> void:
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	margin.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	margin.grow_vertical = Control.GROW_DIRECTION_END
-	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_top", 24)
-	add_child(margin)
-	_window = margin
 	_panel = PanelContainer.new()
+	_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.04, 0.05, 0.08, 0.96)
@@ -60,7 +61,8 @@ func _build_panel() -> void:
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(14)
 	_panel.add_theme_stylebox_override("panel", style)
-	margin.add_child(_panel)
+	add_child(_panel)
+	_window = _panel
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	_panel.add_child(column)
@@ -71,6 +73,14 @@ func _build_panel() -> void:
 	_points_label.add_theme_font_size_override("font_size", 18)
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
 		column.add_child(_build_stat_row(stat))
+	_place_initial_window.call_deferred()
+
+func _place_initial_window() -> void:
+	# Use a stable top-left coordinate system after content has established the
+	# panel size. The former top-right-anchored wrapper changed coordinate edges
+	# whenever it was shown again.
+	var viewport_size := get_viewport().get_visible_rect().size
+	_panel.position = Vector2(viewport_size.x - _panel.size.x - 24.0, 24.0)
 
 func _build_stat_row(stat: StatusPoints.Stat) -> Control:
 	var row := HBoxContainer.new()
