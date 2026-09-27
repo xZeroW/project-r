@@ -60,6 +60,12 @@ func toggle() -> void:
 func is_open() -> bool:
 	return _panel.visible
 
+func close() -> void:
+	if _panel.visible:
+		_saved_position = _window.global_position
+		_has_saved_position = true
+		_panel.visible = false
+
 func _build_panel() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)

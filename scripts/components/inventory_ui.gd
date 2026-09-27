@@ -37,6 +37,12 @@ func _unhandled_input(event: InputEvent) -> void:
 func is_open() -> bool:
 	return visible
 
+func close() -> void:
+	if visible:
+		_saved_position = _window.global_position
+		_has_saved_position = true
+		visible = false
+
 func _build_window() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)

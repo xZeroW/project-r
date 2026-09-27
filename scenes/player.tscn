@@ -33,6 +33,7 @@
 [ext_resource type="Script" path="res://scripts/components/world_interaction.gd" id="world_interaction"]
 [ext_resource type="Script" path="res://scripts/components/equipment.gd" id="equipment"]
 [ext_resource type="Script" path="res://scripts/components/attribute_ui.gd" id="attribute_ui"]
+[ext_resource type="Script" path="res://scripts/components/escape_menu.gd" id="escape_menu"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -157,6 +158,14 @@ script = ExtResource("status_ui")
 status_points = NodePath("../StatusPoints")
 equipment = NodePath("../Equipment")
 inventory = NodePath("../Inventory")
+
+[node name="EscapeMenu" type="CanvasLayer" parent="." unique_id=110000006 node_paths=PackedStringArray("status_ui", "attribute_ui", "inventory_ui")]
+unique_name_in_owner = true
+layer = 30
+script = ExtResource("escape_menu")
+status_ui = NodePath("../StatusUI")
+attribute_ui = NodePath("../AttributeUI")
+inventory_ui = NodePath("../InventoryUI")
 
 [node name="DeathRespawn" type="Node" parent="." unique_id=627859401]
 unique_name_in_owner = true
