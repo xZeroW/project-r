@@ -72,9 +72,9 @@ func _on_destination_requested(screen_position: Vector2) -> void:
 	if camera != null:
 		world_interaction.request_interaction(screen_position, camera)
 
-func _on_ground_selected(position: Vector3) -> void:
+func _on_ground_selected(world_position: Vector3) -> void:
 	targeting.cancel()
-	click_movement.request_ground_destination(self, position)
+	click_movement.request_ground_destination(self, world_position)
 
 func _on_enemy_selected(enemy: MeleeCombat) -> void:
 	click_movement.cancel()

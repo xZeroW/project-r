@@ -26,7 +26,7 @@ func configure(owner_inventory: Inventory, index: int, slot_item: ItemDefinition
 	equipment = owner_equipment
 	slot_index = index
 	item = slot_item
-	tooltip_text = item.tooltip() if item != null else "Empty slot"
+	tooltip_text = item.tooltip() if item != null else ""
 	queue_redraw()
 
 func _get_drag_data(_at_position: Vector2) -> Variant:

@@ -23,7 +23,7 @@ func configure(owner_equipment: Equipment, owner_inventory: Inventory, equipment
 	inventory = owner_inventory
 	slot = equipment_slot
 	item = equipment.get_item(slot)
-	tooltip_text = item.tooltip() if item != null else "%s slot" % slot_name()
+	tooltip_text = item.tooltip() if item != null else ""
 	queue_redraw()
 
 func slot_name() -> String:
