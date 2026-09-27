@@ -6,6 +6,9 @@ extends CanvasLayer
 @export var status_points: StatusPoints
 
 var _panel: PanelContainer
+var _window: MarginContainer
+var _saved_position := Vector2.ZERO
+var _has_saved_position := false
 var _points_label: Label
 var _labels: Dictionary[StatusPoints.Stat, Label] = {}
 var _buttons: Dictionary[StatusPoints.Stat, Button] = {}
@@ -20,7 +23,14 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_attributes") and not event.is_echo():
-		_panel.visible = not _panel.visible
+		if _panel.visible:
+			_saved_position = _window.global_position
+			_has_saved_position = true
+			_panel.visible = false
+		else:
+			_panel.visible = true
+			if _has_saved_position:
+				_window.global_position = _saved_position
 		get_viewport().set_input_as_handled()
 
 func is_open() -> bool:
@@ -34,6 +44,7 @@ func _build_panel() -> void:
 	margin.add_theme_constant_override("margin_right", 24)
 	margin.add_theme_constant_override("margin_top", 24)
 	add_child(margin)
+	_window = margin
 	_panel = PanelContainer.new()
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var style := StyleBoxFlat.new()
@@ -47,6 +58,9 @@ func _build_panel() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	_panel.add_child(column)
+	var drag_handle := WindowDragHandle.new()
+	drag_handle.configure(_window)
+	column.add_child(drag_handle)
 	_points_label = _add_label(column, Color(0.85, 0.9, 1.0))
 	_points_label.add_theme_font_size_override("font_size", 18)
 	for stat: StatusPoints.Stat in StatusPoints.Stat.values():

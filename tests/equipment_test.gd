@@ -22,6 +22,7 @@ func run() -> void:
 	var status_ui := player_actor.get_node("StatusUI") as StatusUI
 	var stats := player_actor.get("stats") as CharacterStats
 	var weapon_slot := ItemDefinition.EquipmentSlot.WEAPON
+	var drag_handle := status_ui._panel.get_child(0).get_child(0) as WindowDragHandle
 
 	check(inventory.get_item(1).equipment_slot == weapon_slot, "The starter Iron Sword must declare itself as a weapon.")
 	check(is_equal_approx(stats.attack_damage, 20.0), "Unequipped gear must not alter the base physical damage.")
@@ -30,6 +31,16 @@ func run() -> void:
 	check(is_equal_approx(stats.attack_damage, 28.0), "The equipped sword modifier must be folded into derived physical damage.")
 	check(status_ui._derived_label.text.contains("ATK 28.0"), "The Offence panel must react to an equipped weapon modifier.")
 	check(status_ui._equipment_slots.size() == 11, "The character sheet must retain its eleven paper-doll slot controls, including two rings.")
+	status_ui.toggle()
+	await process_frame
+	var original_sheet_position := status_ui._window.global_position
+	drag_handle.move_window_by(Vector2(31, 17))
+	check(status_ui._window.global_position.is_equal_approx(original_sheet_position + Vector2(31, 17)), "The paper-doll grip must move the character sheet.")
+	var moved_sheet_position := status_ui._window.global_position
+	status_ui.toggle()
+	status_ui.toggle()
+	await process_frame
+	check(status_ui._window.global_position.is_equal_approx(moved_sheet_position), "Closing and reopening the character sheet must restore its last position.")
 	var weapon_control: EquipmentSlotControl = status_ui._equipment_slots.filter(func(slot: EquipmentSlotControl) -> bool: return slot.slot == weapon_slot)[0]
 	check(weapon_control.item == equipment.get_item(weapon_slot), "Paper-doll controls must refresh when equipment changes.")
 	check(not equipment.equip_from_inventory(inventory, 0, weapon_slot), "Consumables must not equip into a weapon slot.")

@@ -57,6 +57,10 @@ active equipment modifiers while recomputing base-stat derivations. The C panel
 projects those live values in **Offence**, **Defence**, and **Misc** tabs. The
 starter Iron Sword now occupies the weapon slot and grants +8 physical damage.
 
+The **I**, **C**, and **P** windows have a thin drag grip at their top edge. A
+window keeps its last session position when closed and restores it when reopened;
+the combat hotbar remains fixed.
+
 ## Next inventory passes
 
 1. Consumables, stack quantities, then save serialization as item ids.
@@ -69,3 +73,4 @@ starter Iron Sword now occupies the weapon slot and grants +8 physical damage.
 | 2026-09-24 | Superseded | Monster definitions provide deterministic item drops. A killed monster spawns persistent `Area3D` pickups that collect on player contact only if Inventory has a vacant slot. | Superseded by click-to-loot correction. |
 | 2026-09-24 | Confirmed | Dragging an inventory item outside its window discards it as a recoverable pickup at the player's feet; drops inside the window cancel safely. | Owner's discard correction. |
 | 2026-09-27 | Confirmed | Equipment is a separate component with fixed typed paper-doll slots. Item blueprints own immutable slot/modifier data; StatusPoints remains the sole CharacterStats writer and folds equipped bonuses into its reactive derivation. | Owner's character-sheet request. |
+| 2026-09-27 | Confirmed | Inventory, character, and attribute windows use a slim drag grip and retain their in-session position across close/reopen. The combat hotbar remains fixed. | Owner's movable-UI request. |

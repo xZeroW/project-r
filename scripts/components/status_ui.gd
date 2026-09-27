@@ -23,6 +23,9 @@ const KNIGHT_TEXTURE := preload("res://assets/characters/knight/example.png")
 @export var inventory: Inventory
 
 var _panel: PanelContainer
+var _window: MarginContainer
+var _saved_position := Vector2.ZERO
+var _has_saved_position := false
 var _derived_label: Label
 var _defence_label: Label
 var _misc_label: Label
@@ -45,7 +48,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func toggle() -> void:
-	_panel.visible = not _panel.visible
+	if _panel.visible:
+		_saved_position = _window.global_position
+		_has_saved_position = true
+		_panel.visible = false
+	else:
+		_panel.visible = true
+		if _has_saved_position:
+			_window.global_position = _saved_position
 
 func is_open() -> bool:
 	return _panel.visible
@@ -56,6 +66,7 @@ func _build_panel() -> void:
 	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(margin)
+	_window = margin
 	_panel = PanelContainer.new()
 	_panel.custom_minimum_size = Vector2(480, 510)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -70,6 +81,9 @@ func _build_panel() -> void:
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 8)
 	_panel.add_child(content)
+	var drag_handle := WindowDragHandle.new()
+	drag_handle.configure(_window)
+	content.add_child(drag_handle)
 	content.add_child(_build_paper_doll())
 	var stats_scroll := ScrollContainer.new()
 	stats_scroll.custom_minimum_size = Vector2(0, 210)

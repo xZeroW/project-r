@@ -10,6 +10,9 @@ const SLOT_SIZE := Vector2(56, 56)
 @export var equipment: Equipment
 
 var _panel: PanelContainer
+var _window: MarginContainer
+var _saved_position := Vector2.ZERO
+var _has_saved_position := false
 var _slots: Array[InventorySlot] = []
 
 func _ready() -> void:
@@ -21,7 +24,14 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_inventory") and not event.is_echo():
-		visible = not visible
+		if visible:
+			_saved_position = _window.global_position
+			_has_saved_position = true
+			visible = false
+		else:
+			visible = true
+			if _has_saved_position:
+				_window.global_position = _saved_position
 		get_viewport().set_input_as_handled()
 
 func is_open() -> bool:
@@ -34,6 +44,7 @@ func _build_window() -> void:
 	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(margin)
+	_window = margin
 
 	_panel = PanelContainer.new()
 	var style := StyleBoxFlat.new()
@@ -48,6 +59,9 @@ func _build_window() -> void:
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 8)
 	_panel.add_child(content)
+	var drag_handle := WindowDragHandle.new()
+	drag_handle.configure(_window)
+	content.add_child(drag_handle)
 	var title := Label.new()
 	title.text = "INVENTORY"
 	title.add_theme_font_size_override("font_size", 18)
