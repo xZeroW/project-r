@@ -101,7 +101,21 @@ formulas (simple prototype defaults):
 	the pickup available. Poring drops a Red Potion; Poporing drops a Blue Gem.
 	Dragging an inventory item outside its window creates the same recoverable
 	labelled pickup at the player's feet.
-  Stacking, equipment effects, and saves remain follow-on item passes.
+   Stacking, consumables, and saves remain follow-on item passes.
+
+## Priority 5 — Character equipment and sheet — DONE
+
+- `Equipment` owns eleven typed paper-doll positions: head, body, gloves, boots,
+  weapon, off-hand, amulet, left/right rings, belt, and cloak. It exchanges a
+  source bag cell through `Inventory.replace_slot`; neither UI mutates data.
+- `ItemDefinition` now declares an immutable equipment slot and stat modifiers.
+  `StatusPoints` remains the sole `CharacterStats` writer and merges currently
+  equipped bonuses into the existing base-stat derivation.
+- **C** opens a combined character sheet: a knight paper doll and native drag
+  targets above reactive PoE-style **Offence**, **Defence**, and **Misc** tabs.
+  The Iron Sword begins in the bag and grants +8 physical damage when equipped.
+- `tests/equipment_test.gd` covers typed equipping, bag exchanges, live sheet
+  refresh, and stat restoration after unequipping.
 
 ## Later (after A, D & B, sprite work allowed to expand)
 
@@ -136,3 +150,4 @@ earlier systems is in scope when a later phase requires it.
 | 2026-09-17 | Confirmed | Repaired seven stale integration tests that still addressed the pre-Phase-D `Monster`/`Monster2` world nodes (they hung before reaching any assertion); they now read `Poring`/`Poporing`. Poring stays passive, so `monster_diversity_test` expects `aggressive = false`. `aggro_test` remains a nav/timing flake. | Phase B verification caught the stale refs. |
 | 2026-09-24 | Confirmed | Phase C begins with a 20-slot non-stacking inventory. Each item uses exactly one slot; native UI dragging moves to empty slots and swaps onto occupied slots. | Owner's inventory-first request. |
 | 2026-09-24 | Confirmed | Phase C loot: deterministic `MonsterDefinition` drop lists spawn persistent labelled world pickups. Clicking a drop paths to it and collects on arrival; proximity never auto-loots. | Owner's click-to-loot correction. |
+| 2026-09-27 | Confirmed | The C character panel combines a paper-doll equipment screen with PoE-inspired stat tabs. Equipment is data-owned separately from the bag; StatusPoints remains the sole CharacterStats writer and incorporates immutable item modifiers. | Owner's character-sheet request. |

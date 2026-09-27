@@ -26,6 +26,7 @@ godot --headless --path . --script res://tests/hotbar_test.gd
 godot --headless --path . --script res://tests/spells_test.gd
 godot --headless --path . --script res://tests/inventory_test.gd
 godot --headless --path . --script res://tests/loot_test.gd
+godot --headless --path . --script res://tests/equipment_test.gd
 # Known-flaky in this environment (pre-existing nav/camera timing flakes; still a useful signal):
 godot --headless --path . --script res://tests/prototype_test.gd
 godot --headless --path . --script res://tests/click_movement_test.gd

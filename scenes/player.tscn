@@ -31,6 +31,8 @@
 [ext_resource type="Script" uid="uid://d2417kdpb8iu3" path="res://scripts/components/status_ui.gd" id="status_ui"]
 [ext_resource type="Script" uid="uid://cl7pde3l63osl" path="res://scripts/components/targeting.gd" id="targeting"]
 [ext_resource type="Script" path="res://scripts/components/world_interaction.gd" id="world_interaction"]
+[ext_resource type="Script" path="res://scripts/components/equipment.gd" id="equipment"]
+[ext_resource type="Script" path="res://scripts/components/attribute_ui.gd" id="attribute_ui"]
 
 [sub_resource type="Resource" id="PlayerStats"]
 resource_local_to_scene = true
@@ -115,21 +117,33 @@ layer = 10
 script = ExtResource("experience_ui")
 experience = NodePath("../Experience")
 
-[node name="StatusPoints" type="Node" parent="." unique_id=1668429292]
+[node name="StatusPoints" type="Node" parent="." unique_id=1668429292 node_paths=PackedStringArray("equipment")]
 unique_name_in_owner = true
 script = ExtResource("status_points")
 stats = SubResource("PlayerStats")
+equipment = NodePath("../Equipment")
 
 [node name="Inventory" type="Node" parent="." unique_id=110000001]
 unique_name_in_owner = true
 script = ExtResource("inventory")
 initial_items = Array[ExtResource("item_definition")]([ExtResource("item_red_potion"), ExtResource("item_iron_sword"), ExtResource("item_blue_gem")])
 
-[node name="InventoryUI" type="CanvasLayer" parent="." unique_id=110000002 node_paths=PackedStringArray("inventory")]
+[node name="Equipment" type="Node" parent="." unique_id=110000004]
+unique_name_in_owner = true
+script = ExtResource("equipment")
+
+[node name="InventoryUI" type="CanvasLayer" parent="." unique_id=110000002 node_paths=PackedStringArray("inventory", "equipment")]
 unique_name_in_owner = true
 layer = 25
 script = ExtResource("inventory_ui")
 inventory = NodePath("../Inventory")
+equipment = NodePath("../Equipment")
+
+[node name="AttributeUI" type="CanvasLayer" parent="." unique_id=110000005 node_paths=PackedStringArray("status_points")]
+unique_name_in_owner = true
+layer = 21
+script = ExtResource("attribute_ui")
+status_points = NodePath("../StatusPoints")
 
 [node name="Hotbar" type="CanvasLayer" parent="." unique_id=1740159308 node_paths=PackedStringArray("caster")]
 unique_name_in_owner = true
@@ -137,10 +151,12 @@ layer = 15
 script = ExtResource("hotbar")
 caster = NodePath("../SpellCaster")
 
-[node name="StatusUI" type="CanvasLayer" parent="." unique_id=1065664510 node_paths=PackedStringArray("status_points")]
+[node name="StatusUI" type="CanvasLayer" parent="." unique_id=1065664510 node_paths=PackedStringArray("status_points", "equipment", "inventory")]
 layer = 20
 script = ExtResource("status_ui")
 status_points = NodePath("../StatusPoints")
+equipment = NodePath("../Equipment")
+inventory = NodePath("../Inventory")
 
 [node name="DeathRespawn" type="Node" parent="." unique_id=627859401]
 unique_name_in_owner = true

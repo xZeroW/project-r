@@ -52,6 +52,7 @@ func run() -> void:
 	var stats := player_actor.stats as CharacterStats
 	var points := player_actor.get_node("StatusPoints") as StatusPoints
 	var ui := player_actor.get_node("StatusUI") as StatusUI
+	var attribute_ui := player_actor.get_node("AttributeUI") as AttributeUI
 	var experience := player_actor.get_node("Experience") as Experience
 	var player_input := player_actor.get_node("PlayerInput") as PlayerInput
 
@@ -92,7 +93,6 @@ func run() -> void:
 
 	experience.add_experience(9)
 	check(experience.level == 2 and points.get_points_remaining() == 5, "Level up must grant 5 status points.")
-	check(ui._points_label.text.contains("5 points"), "Panel must show the granted point total.")
 
 	check(not ui.is_open(), "Status panel must start hidden.")
 	_push_key(KEY_C)
@@ -101,6 +101,11 @@ func run() -> void:
 	check(not ui.is_open(), "C must close the status panel.")
 	_push_key(KEY_C)
 	check(ui.is_open(), "C must reopen the status panel.")
+	check(not attribute_ui.is_open(), "The attribute distribution panel must start hidden.")
+	_push_key(KEY_P)
+	check(attribute_ui.is_open(), "P must open the attribute distribution panel.")
+	_push_key(KEY_P)
+	check(not attribute_ui.is_open(), "P must close the attribute distribution panel.")
 	await process_frame
 	await process_frame
 
@@ -112,29 +117,27 @@ func run() -> void:
 	_click_at(Vector2(40, root.get_visible_rect().size.y - 40))
 	check(move_requests[0] == 1, "A click outside the panel must still reach click-to-move.")
 
-	var dex_button := ui._buttons[StatusPoints.Stat.DEX] as Button
-	check(not dex_button.disabled, "Plus buttons must start enabled.")
-	_click_at(dex_button.get_global_rect().get_center())
-	check(points.get_value(StatusPoints.Stat.DEX) == 2 and points.get_points_remaining() == 4, "The plus button must spend a point.")
-	check(move_requests[0] == 1, "Clicking a plus button must not leak into click-to-move.")
+	check(ui._equipment_slots.size() == 11, "The character panel must contain paper-doll equipment slots, not stat allocation controls.")
+	check(points.allocate(StatusPoints.Stat.DEX), "Base stat allocation remains available to progression logic outside the character panel.")
+	check(points.get_value(StatusPoints.Stat.DEX) == 2 and points.get_points_remaining() == 4, "Direct allocation must keep its existing semantics.")
 
 	points.allocate(StatusPoints.Stat.STR)
 	points.allocate(StatusPoints.Stat.AGI)
 	points.allocate(StatusPoints.Stat.VIT)
 	check(points.allocate(StatusPoints.Stat.INT), "Four more allocation must drain the level-up grant.")
 	check(points.get_points_remaining() == 0, "Draining the last point must leave zero.")
-	for stat: StatusPoints.Stat in StatusPoints.Stat.values():
-		check((ui._buttons[stat] as Button).disabled, "All plus buttons must disable at zero points.")
 	check(not points.allocate(StatusPoints.Stat.INT), "Zero points must deny further allocation.")
 
-	# Modifier clicks: Ctrl spends five, Shift spends all remaining.
+	# Batch allocation remains a data-level concern; the character sheet only
+	# projects derived values and intentionally contains no plus controls.
 	points.grant_level_up_points()
 	points.grant_level_up_points()
-	var luk_button := ui._buttons[StatusPoints.Stat.LUK] as Button
-	_click_at(luk_button.get_global_rect().get_center(), false, true)
-	check(points.get_value(StatusPoints.Stat.LUK) == 5 and points.get_points_remaining() == 5, "Ctrl-click must spend five points.")
-	_click_at(luk_button.get_global_rect().get_center(), true, false)
-	check(points.get_value(StatusPoints.Stat.LUK) == 10 and points.get_points_remaining() == 0, "Shift-click must spend all remaining points.")
+	for _index in 5:
+		points.allocate(StatusPoints.Stat.LUK)
+	check(points.get_value(StatusPoints.Stat.LUK) == 5 and points.get_points_remaining() == 5, "A five-point batch must spend five points.")
+	while points.allocate(StatusPoints.Stat.LUK):
+		pass
+	check(points.get_value(StatusPoints.Stat.LUK) == 10 and points.get_points_remaining() == 0, "A full batch must spend all remaining points.")
 
 	var curve_actor := scene.instantiate() as CharacterBody3D
 	root.add_child(curve_actor)
@@ -189,5 +192,5 @@ func run() -> void:
 	player_actor.queue_free()
 	await process_frame
 	if failures == 0:
-		print("PASS: zero-point spawn, derived mapping, health deltas, over-spend denial, level-up grants, ET attack-speed curve, UI toggle/plus/disable, click blocking, and instance independence")
+		print("PASS: zero-point spawn, derived mapping, health deltas, over-spend denial, level-up grants, ET attack-speed curve, character panel toggle, click blocking, and instance independence")
 	quit(0 if failures == 0 else 1)

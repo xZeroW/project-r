@@ -28,6 +28,7 @@ const ET_ASPD_CORRECTION_FACTOR := 7.15      # ET's (√205 − √AGI) correcti
 const ET_ASPD_CAP := 189.583333333333        # final-ASPD ceiling (the 480% panel cap)
 
 @export var stats: CharacterStats
+@export var equipment: Equipment
 
 var points_remaining: int = 0
 
@@ -115,14 +116,16 @@ func attribute_attack_power(value: int) -> float:
 func recompute() -> void:
 	var previous_max_health := stats.max_health
 	var previous_max_mana := stats.max_mana
-	stats.attack_damage = BASE_ATTACK_DAMAGE + attribute_attack_power(_values[Stat.STR])
-	stats.magic_attack = attribute_attack_power(_values[Stat.INT])
-	stats.attack_speed = BASE_ATTACK_SPEED * et_panel_aspd(_values[Stat.AGI]) / et_panel_aspd(0)
-	stats.evasion = EVASION_PER_AGI * _values[Stat.AGI]
-	stats.acc = BASE_ACC + ACC_PER_DEX * _values[Stat.DEX]
-	stats.crit = CRIT_PER_LUK * _values[Stat.LUK]
-	var new_max_health := BASE_MAX_HEALTH + HEALTH_PER_VIT * _values[Stat.VIT]
-	var new_max_mana := BASE_MAX_MANA + MANA_PER_INT * _values[Stat.INT]
+	stats.attack_damage = BASE_ATTACK_DAMAGE + attribute_attack_power(_values[Stat.STR]) + _equipment_bonus(&"attack_damage")
+	stats.magic_attack = attribute_attack_power(_values[Stat.INT]) + _equipment_bonus(&"magic_attack")
+	stats.attack_speed = BASE_ATTACK_SPEED * et_panel_aspd(_values[Stat.AGI]) / et_panel_aspd(0) + _equipment_bonus(&"attack_speed")
+	stats.armour = _equipment_bonus(&"armour")
+	stats.block = _equipment_bonus(&"block")
+	stats.evasion = EVASION_PER_AGI * _values[Stat.AGI] + _equipment_bonus(&"evasion")
+	stats.acc = BASE_ACC + ACC_PER_DEX * _values[Stat.DEX] + _equipment_bonus(&"acc")
+	stats.crit = CRIT_PER_LUK * _values[Stat.LUK] + _equipment_bonus(&"crit")
+	var new_max_health := BASE_MAX_HEALTH + HEALTH_PER_VIT * _values[Stat.VIT] + _equipment_bonus(&"max_health")
+	var new_max_mana := BASE_MAX_MANA + MANA_PER_INT * _values[Stat.INT] + _equipment_bonus(&"max_mana")
 	# RO behavior: raising a maximum raises the current value by the same delta, so
 	# spending VIT/INT heals the difference. Current values clamp to the new maximum.
 	if new_max_health > previous_max_health:
@@ -133,3 +136,6 @@ func recompute() -> void:
 	stats.max_mana = new_max_mana
 	stats.current_health = minf(stats.current_health, stats.max_health)
 	stats.mana = minf(stats.mana, stats.max_mana)
+
+func _equipment_bonus(property: StringName) -> float:
+	return equipment.get_bonus(property) if equipment != null else 0.0

@@ -7,6 +7,7 @@ const COLUMNS := 5
 const SLOT_SIZE := Vector2(56, 56)
 
 @export var inventory: Inventory
+@export var equipment: Equipment
 
 var _panel: PanelContainer
 var _slots: Array[InventorySlot] = []
@@ -66,7 +67,7 @@ func _build_window() -> void:
 
 func _refresh_slots() -> void:
 	for index: int in _slots.size():
-		_slots[index].configure(inventory, index, inventory.get_item(index))
+		_slots[index].configure(inventory, index, inventory.get_item(index), equipment)
 
 func _on_slot_drag_ended(index: int, succeeded: bool, screen_position: Vector2) -> void:
 	if not succeeded and not _panel.get_global_rect().has_point(screen_position):

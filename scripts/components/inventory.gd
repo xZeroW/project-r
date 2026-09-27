@@ -31,6 +31,16 @@ func move_slot(from: int, to: int) -> void:
 	_slots[to] = moved_item
 	inventory_changed.emit()
 
+## Exchanges one bag position with an externally owned slot and returns the old
+## bag item. Equipment uses this instead of reaching into the private slot array.
+func replace_slot(index: int, item: ItemDefinition) -> ItemDefinition:
+	if not _is_valid_index(index):
+		return null
+	var previous_item := _slots[index]
+	_slots[index] = item
+	inventory_changed.emit()
+	return previous_item
+
 ## Adds one non-stacking item to the first vacant slot. Returns false without
 ## changing state when the bag is full, so a world pickup can remain available.
 func try_add_item(item: ItemDefinition) -> bool:

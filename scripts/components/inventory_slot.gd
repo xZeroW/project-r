@@ -3,6 +3,7 @@ extends Control
 ## A single native drag-and-drop target. The parent Inventory still owns swaps.
 
 var inventory: Inventory
+var equipment: Equipment
 var slot_index: int = -1
 var item: ItemDefinition
 var _is_drag_source: bool = false
@@ -20,8 +21,9 @@ func _ready() -> void:
 	_background.set_border_width_all(1)
 	_background.set_corner_radius_all(4)
 
-func configure(owner_inventory: Inventory, index: int, slot_item: ItemDefinition) -> void:
+func configure(owner_inventory: Inventory, index: int, slot_item: ItemDefinition, owner_equipment: Equipment = null) -> void:
 	inventory = owner_inventory
+	equipment = owner_equipment
 	slot_index = index
 	item = slot_item
 	tooltip_text = item.tooltip() if item != null else "Empty slot"
@@ -44,11 +46,16 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if not data is Dictionary:
 		return false
+	if data.get("equipment") == equipment:
+		return int(data.get("slot", ItemDefinition.EquipmentSlot.NONE)) != ItemDefinition.EquipmentSlot.NONE
 	return data.get("inventory") == inventory and int(data.get("slot_index", -1)) != slot_index
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	if _can_drop_data(_at_position, data):
-		inventory.move_slot(int(data["slot_index"]), slot_index)
+		if data.has("equipment"):
+			equipment.unequip_to_inventory(inventory, slot_index, data["slot"])
+		else:
+			inventory.move_slot(int(data["slot_index"]), slot_index)
 
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_DRAG_END or not _is_drag_source:

@@ -11,6 +11,7 @@ var _facing_direction: Vector3 = Vector3(1, 0, 1).normalized()
 @onready var spell_caster: SpellCaster = %SpellCaster
 @onready var hotbar: Hotbar = %Hotbar
 @onready var inventory: Inventory = %Inventory
+@onready var equipment: Equipment = %Equipment
 @onready var world_interaction: WorldInteraction = %WorldInteraction
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -38,6 +39,7 @@ func _ready() -> void:
 	combat.defeated_enemy.connect(_on_defeated_enemy)
 	experience.leveled_up.connect(_on_leveled_up)
 	experience.leveled_up.connect(status_points.grant_level_up_points.unbind(1))
+	equipment.equipment_changed.connect(status_points.recompute)
 	movement_component.speed = stats.movement_speed
 	input_component.destination_requested.connect(_on_destination_requested)
 	click_movement.destination_changed.connect(destination_marker.show_destination)
